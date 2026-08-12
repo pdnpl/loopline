@@ -321,6 +321,10 @@ body::after {
   bottom: 2px;
   transform: translateX(-50%);
   margin: 0;
+  /* Flex, not inline text: whitespace between the two spans is ignored, so the
+     line stays optically centred when the count is empty at a dead end. */
+  display: flex;
+  gap: 0.32em;
   font-size: 12px;
   font-weight: 560;
   letter-spacing: 0.03em;

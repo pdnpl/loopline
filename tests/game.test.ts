@@ -207,9 +207,24 @@ describe('Game — pointer play', () => {
 
 describe('Game — dead ends', () => {
   /**
-   * Any maximal walk from a dot that is *not* a valid Eulerian start must run
-   * out of moves before it runs out of lines. That is what "not a valid start"
-   * means, so this is a reliable way to reach a dead end on a generated board.
+   * Loads a level that has at least one dot which is *not* a valid Eulerian
+   * start. A board whose degrees are all even has no such dot — every node is a
+   * legal opening — so the level is chosen rather than hard-coded, and the
+   * search fails loudly instead of silently skipping the assertions.
+   */
+  function loadLevelWithABadStart(): void {
+    for (const level of [3, 4, 5, 6, 7, 8]) {
+      harness.game.loadLevel(level);
+      const puzzle = harness.game.currentPuzzle;
+      if (puzzle.nodes.some((node) => !puzzle.validStarts.includes(node.id))) return;
+    }
+    throw new Error('no level in 3..8 has a dot that cannot open a solution');
+  }
+
+  /**
+   * Any maximal walk from a dot that is not a valid Eulerian start must run out
+   * of moves before it runs out of lines — that is exactly what "not a valid
+   * start" means — so this always reaches a dead end.
    */
   function walkIntoDeadEnd(): void {
     const { game, surface } = harness;
@@ -217,8 +232,8 @@ describe('Game — dead ends', () => {
     const layout = game.currentLayout;
 
     const start = puzzle.nodes.find((node) => !puzzle.validStarts.includes(node.id));
-    expect(start).toBeDefined();
-    const startId = (start as { id: number }).id;
+    if (start === undefined) throw new Error('every dot on this board can open a solution');
+    const startId = start.id;
 
     press(surface, 'pointerdown', layout.px[startId], layout.py[startId]);
 
@@ -234,7 +249,7 @@ describe('Game — dead ends', () => {
   }
 
   it('reports a dead end without ending the run', () => {
-    harness.game.loadLevel(3);
+    loadLevelWithABadStart();
     walkIntoDeadEnd();
 
     expect(harness.deadEnds.at(-1)).toBe(true);
@@ -244,7 +259,7 @@ describe('Game — dead ends', () => {
   });
 
   it('clears the dead end once a line is taken back', () => {
-    harness.game.loadLevel(3);
+    loadLevelWithABadStart();
     walkIntoDeadEnd();
     expect(harness.deadEnds.at(-1)).toBe(true);
 
@@ -255,7 +270,7 @@ describe('Game — dead ends', () => {
   });
 
   it('reports each change once, not once per frame', () => {
-    harness.game.loadLevel(3);
+    loadLevelWithABadStart();
     walkIntoDeadEnd();
     const seen = harness.deadEnds.length;
 
