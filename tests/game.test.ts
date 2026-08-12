@@ -195,6 +195,55 @@ describe('Game — pointer play', () => {
     expect(harness.progress.at(-1)).toBe(puzzle.edges.length);
   });
 
+  it('does not punish touching a dot and letting go without drawing', () => {
+    const layout = harness.game.currentLayout;
+    const start = harness.game.currentPuzzle.validStarts[0];
+
+    press(harness.surface, 'pointerdown', layout.px[start], layout.py[start]);
+    press(harness.surface, 'pointerup', layout.px[start], layout.py[start]);
+
+    // Exploring where to begin is not a failed run.
+    expect(harness.game.currentPhase).toBe('idle');
+    expect(harness.phases).toEqual(['drawing', 'idle']);
+  });
+
+  it('does not punish dragging every line back off again before letting go', () => {
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+    expect(harness.progress.at(-1)).toBe(puzzle.edges.length - 1);
+
+    press(harness.surface, 'pointermove', layout.px[path[0]], layout.py[path[0]]);
+    expect(harness.progress.at(-1)).toBe(puzzle.edges.length);
+
+    press(harness.surface, 'pointerup', layout.px[path[0]], layout.py[path[0]]);
+    expect(harness.game.currentPhase).toBe('idle');
+    expect(harness.phases).not.toContain('failed');
+  });
+
+  it('reports a full board whenever there is nothing drawn to restart', () => {
+    const total = harness.game.currentPuzzle.edges.length;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(
+      harness.game.currentPuzzle,
+      harness.game.currentPuzzle.validStarts[0],
+    );
+
+    // The dock's Restart button is driven off this: remaining === total means
+    // there is nothing to clear, so the button is disabled.
+    expect(harness.progress.at(-1)).toBe(total);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+    expect(harness.progress.at(-1)).toBeLessThan(total);
+
+    harness.game.restart();
+    expect(harness.progress.at(-1)).toBe(total);
+  });
+
   it('does not start the clock until the first line is drawn', () => {
     const layout = harness.game.currentLayout;
     const start = harness.game.currentPuzzle.validStarts[0];

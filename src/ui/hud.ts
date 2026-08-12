@@ -22,6 +22,8 @@ export interface OverlayData {
 export interface HudHandlers {
   /** Overlay primary action — retry, next level, or dismiss the intro. */
   onOverlayAction(kind: OverlayKind): void;
+  /** Overlay secondary action. Only the solved screen has one: replay. */
+  onOverlaySecondary(kind: OverlayKind): void;
   onRestart(): void;
   onToggleLang(): void;
   onCycleTheme(): void;
@@ -56,6 +58,7 @@ export class Hud {
   private readonly overlaySteps = el('overlay-steps');
   private readonly overlayTime = el('overlay-time');
   private readonly overlayAction = el<HTMLButtonElement>('overlay-action');
+  private readonly overlaySecondary = el<HTMLButtonElement>('overlay-secondary');
   private readonly overlayHint = el('overlay-hint');
 
   private readonly btnLang = el<HTMLButtonElement>('btn-lang');
@@ -87,17 +90,33 @@ export class Hud {
       this.activateOverlay();
     });
 
+    // The secondary action sits inside the tap-anywhere region, so it has to
+    // stop the event reaching the veil or it would fire the primary action too.
+    this.overlaySecondary.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.activateSecondary();
+    });
+    this.overlaySecondary.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.activateSecondary();
+    });
+
+    // Browsers do not dispatch pointer events to a disabled control, but that
+    // has been inconsistent enough historically to be worth stating outright —
+    // a Restart that runs on an empty board is exactly the "pressed it, nothing
+    // happened" bug this state exists to prevent.
+    const restart = (): void => {
+      if (this.btnRestart.disabled) return;
+      this.guard(() => {
+        handlers.onRestart();
+      });
+    };
     this.btnRestart.addEventListener('pointerdown', (event) => {
       event.preventDefault();
-      this.guard(() => {
-        handlers.onRestart();
-      });
+      restart();
     });
-    this.btnRestart.addEventListener('click', () => {
-      this.guard(() => {
-        handlers.onRestart();
-      });
-    });
+    this.btnRestart.addEventListener('click', restart);
 
     this.btnLang.addEventListener('click', () => {
       handlers.onToggleLang();
@@ -122,6 +141,14 @@ export class Hud {
     if (kind === null) return;
     this.guard(() => {
       this.handlers.onOverlayAction(kind);
+    });
+  }
+
+  private activateSecondary(): void {
+    const kind = this.overlayKind;
+    if (kind === null) return;
+    this.guard(() => {
+      this.handlers.onOverlaySecondary(kind);
     });
   }
 
@@ -178,6 +205,15 @@ export class Hud {
   }
 
   /**
+   * The dock button is only meaningful once something has been drawn. Leaving
+   * it live on an untouched board makes it look broken: it is pressed, it runs,
+   * and nothing visibly happens because there was nothing to clear.
+   */
+  setRestartEnabled(enabled: boolean): void {
+    this.btnRestart.disabled = !enabled;
+  }
+
+  /**
    * A dead end takes over the counter slot rather than adding a line of its own,
    * so nothing on the board shifts at the moment the player most needs to read
    * it.
@@ -230,6 +266,8 @@ export class Hud {
     this.overlay.classList.toggle('overlay--failed', kind === 'failed');
     this.overlaySteps.hidden = kind !== 'intro';
     this.overlayTime.hidden = kind !== 'solved';
+    this.overlaySecondary.hidden = kind !== 'solved';
+    if (kind === 'solved') setText(this.overlaySecondary, this.t('replay'));
 
     if (kind === 'intro') {
       setText(this.overlayEyebrow, this.t('tagline'));

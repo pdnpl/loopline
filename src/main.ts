@@ -45,6 +45,13 @@ const hud = new Hud({
     }
     goToLevel(game.currentLevel + 1);
   },
+  onOverlaySecondary: (kind: OverlayKind) => {
+    // Only the solved screen offers one, and it replays the level just solved
+    // so the best time is something you can actually chase.
+    if (kind !== 'solved') return;
+    game.restart();
+    board.focus({ preventScroll: true });
+  },
   onRestart: () => {
     game.restart();
     board.focus({ preventScroll: true });
@@ -71,8 +78,9 @@ const game = new Game({
   surface: board,
   hooks: {
     onPhase: handlePhase,
-    onProgress: (remaining) => {
+    onProgress: (remaining, total) => {
       hud.setProgress(remaining);
+      hud.setRestartEnabled(remaining < total);
     },
     onElapsed: (ms) => {
       hud.setTime(ms);

@@ -149,6 +149,12 @@ export class Game {
   start(): void {
     if (this.rafId !== 0) return;
     this.handleResize();
+
+    // Publish the opening state, so a host that never calls `loadLevel` still
+    // gets one progress report to build its UI from.
+    this.hooks.onProgress(edgesRemaining(this.trail, this.puzzle), this.puzzle.edges.length);
+    this.hooks.onElapsed(this.elapsed);
+
     this.lastFrame = performance.now();
     this.rafId = requestAnimationFrame(this.frame);
   }
@@ -384,9 +390,19 @@ export class Game {
 
     if (isComplete(this.trail, this.puzzle)) {
       this.solve();
-    } else {
-      this.fail();
+      return;
     }
+
+    // Touching a dot to see what happens, or dragging every line back off
+    // again, is not a failed run — there is nothing drawn to lose. Silently
+    // returning to the start also keeps these off the failure count that
+    // decides when to hint at the valid opening dots.
+    if (this.trail.edges.length === 0) {
+      this.resetRun();
+      return;
+    }
+
+    this.fail();
   };
 
   // -- keyboard ------------------------------------------------------------
