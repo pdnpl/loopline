@@ -78,9 +78,8 @@ const game = new Game({
   surface: board,
   hooks: {
     onPhase: handlePhase,
-    onProgress: (remaining, total) => {
+    onProgress: (remaining) => {
       hud.setProgress(remaining);
-      hud.setRestartEnabled(remaining < total);
     },
     onElapsed: (ms) => {
       hud.setTime(ms);

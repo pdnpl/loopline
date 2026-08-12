@@ -40,29 +40,24 @@ beforeEach(() => {
 });
 
 describe('Hud — restart button', () => {
-  it('is disabled while there is nothing drawn to clear', () => {
-    const total = 12;
-    hud.setProgress(total);
-    hud.setRestartEnabled(false);
-    expect(el<HTMLButtonElement>('btn-restart').disabled).toBe(true);
-  });
-
-  it('becomes usable once a line has been drawn', () => {
-    hud.setRestartEnabled(true);
+  it('is never disabled, including on an untouched board', () => {
+    // A greyed-out control reads as broken, and restarting an untouched board
+    // is harmless, so the button stays live in every state.
+    expect(el<HTMLButtonElement>('btn-restart').disabled).toBe(false);
+    hud.setProgress(12);
     expect(el<HTMLButtonElement>('btn-restart').disabled).toBe(false);
   });
 
   it('fires on pointerdown, not on release', () => {
-    hud.setRestartEnabled(true);
     el('btn-restart').dispatchEvent(pointerEvent('pointerdown', 0, 0));
     expect(handlers.onRestart).toHaveBeenCalledTimes(1);
   });
 
-  it('stays inert while disabled, even if an event reaches it anyway', () => {
-    hud.setRestartEnabled(false);
+  it('does not fire twice for one press', () => {
+    // A real press produces pointerdown and then click; only the first counts.
     el('btn-restart').dispatchEvent(pointerEvent('pointerdown', 0, 0));
     el('btn-restart').dispatchEvent(pointerEvent('click', 0, 0));
-    expect(handlers.onRestart).not.toHaveBeenCalled();
+    expect(handlers.onRestart).toHaveBeenCalledTimes(1);
   });
 });
 

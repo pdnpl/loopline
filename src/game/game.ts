@@ -205,6 +205,12 @@ export class Game {
   /** Same board, clean slate. The fast path players hit over and over. */
   restart(): void {
     this.resetRun();
+
+    // Answer the press. On a board with nothing drawn a restart changes no
+    // state, and a control that responds with nothing reads as broken — so the
+    // dots pulse once to confirm the board was reset either way.
+    this.nodePulse.fill(1);
+    vibrate(8);
   }
 
   private resetRun(): void {

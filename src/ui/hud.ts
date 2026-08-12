@@ -102,12 +102,10 @@ export class Hud {
       this.activateSecondary();
     });
 
-    // Browsers do not dispatch pointer events to a disabled control, but that
-    // has been inconsistent enough historically to be worth stating outright —
-    // a Restart that runs on an empty board is exactly the "pressed it, nothing
-    // happened" bug this state exists to prevent.
+    // Always live. A greyed-out control reads as broken far more readily than
+    // it reads as "nothing to do", and restarting an untouched board is
+    // harmless — the game answers the press instead of refusing it.
     const restart = (): void => {
-      if (this.btnRestart.disabled) return;
       this.guard(() => {
         handlers.onRestart();
       });
@@ -202,15 +200,6 @@ export class Hud {
   setProgress(remaining: number): void {
     this.remaining = remaining;
     this.renderProgress();
-  }
-
-  /**
-   * The dock button is only meaningful once something has been drawn. Leaving
-   * it live on an untouched board makes it look broken: it is pressed, it runs,
-   * and nothing visibly happens because there was nothing to clear.
-   */
-  setRestartEnabled(enabled: boolean): void {
-    this.btnRestart.disabled = !enabled;
   }
 
   /**

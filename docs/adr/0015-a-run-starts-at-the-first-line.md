@@ -1,6 +1,6 @@
 # ADR-0015: A run starts at the first line, not at the first touch
 
-- **Status:** Accepted
+- **Status:** Accepted — decision 2 superseded by [ADR-0016](0016-restart-always-answers.md)
 - **Date:** 2026-08-13
 - **Deciders:** autonomous agent, prompted by a bug report from @ravwtar
 - **Refines:** [ADR-0013](0013-stroke-model-and-fast-retry.md)

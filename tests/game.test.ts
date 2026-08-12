@@ -232,8 +232,6 @@ describe('Game — pointer play', () => {
       harness.game.currentPuzzle.validStarts[0],
     );
 
-    // The dock's Restart button is driven off this: remaining === total means
-    // there is nothing to clear, so the button is disabled.
     expect(harness.progress.at(-1)).toBe(total);
 
     press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
@@ -242,6 +240,19 @@ describe('Game — pointer play', () => {
 
     harness.game.restart();
     expect(harness.progress.at(-1)).toBe(total);
+  });
+
+  it('answers a restart on an untouched board instead of doing nothing', () => {
+    const total = harness.game.currentPuzzle.edges.length;
+    const before = harness.progress.length;
+
+    harness.game.restart();
+
+    // Nothing was drawn, so no state changes — but the press is still
+    // acknowledged, which is what stops the button reading as broken.
+    expect(harness.progress.length).toBeGreaterThan(before);
+    expect(harness.progress.at(-1)).toBe(total);
+    expect(harness.game.currentPhase).toBe('idle');
   });
 
   it('does not start the clock until the first line is drawn', () => {
