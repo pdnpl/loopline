@@ -45,6 +45,7 @@ export class Hud {
   private readonly statLevel = el('stat-level');
   private readonly statTime = el('stat-time');
   private readonly statBest = el('stat-best');
+  private readonly progress = el('progress');
   private readonly progressValue = el('progress-value');
   private readonly progressLabel = el('progress-label');
 
@@ -72,6 +73,8 @@ export class Hud {
   private lang: Lang = 'en';
   private overlayKind: OverlayKind | null = null;
   private lastActivation = 0;
+  private remaining = 0;
+  private deadEnd = false;
 
   constructor(private readonly handlers: HudHandlers) {
     // Pointer-down rather than click: the retry loop should react on touch, not
@@ -141,7 +144,7 @@ export class Hud {
     this.btnLang.setAttribute('aria-label', this.t('language'));
     this.btnHelp.setAttribute('aria-label', this.t('help'));
     setText(this.btnRestart, this.t('restart'));
-    setText(this.progressLabel, this.t('linesLeft'));
+    this.renderProgress();
 
     el('board').setAttribute('aria-label', this.t('a11yBoard'));
 
@@ -170,7 +173,30 @@ export class Hud {
   }
 
   setProgress(remaining: number): void {
-    setText(this.progressValue, String(remaining));
+    this.remaining = remaining;
+    this.renderProgress();
+  }
+
+  /**
+   * A dead end takes over the counter slot rather than adding a line of its own,
+   * so nothing on the board shifts at the moment the player most needs to read
+   * it.
+   */
+  setDeadEnd(active: boolean): void {
+    if (active === this.deadEnd) return;
+    this.deadEnd = active;
+    this.renderProgress();
+  }
+
+  private renderProgress(): void {
+    if (this.deadEnd) {
+      setText(this.progressValue, '');
+      setText(this.progressLabel, this.t('deadEnd'));
+    } else {
+      setText(this.progressValue, String(this.remaining));
+      setText(this.progressLabel, this.t('linesLeft'));
+    }
+    this.progress.classList.toggle('progress--warn', this.deadEnd);
   }
 
   announce(key: MessageKey, params?: Readonly<Record<string, string | number>>): void {

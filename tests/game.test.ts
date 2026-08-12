@@ -50,6 +50,7 @@ interface Harness {
   pump: FramePump;
   phases: Phase[];
   progress: number[];
+  deadEnds: boolean[];
 }
 
 let harness: Harness;
@@ -67,6 +68,7 @@ function setup(): Harness {
 
   const phases: Phase[] = [];
   const progress: number[] = [];
+  const deadEnds: boolean[] = [];
   const game = new Game({
     canvas,
     surface,
@@ -74,11 +76,12 @@ function setup(): Harness {
       onPhase: (phase) => phases.push(phase),
       onProgress: (remaining) => progress.push(remaining),
       onElapsed: () => undefined,
+      onDeadEnd: (active) => deadEnds.push(active),
     },
   });
   game.start();
 
-  return { game, surface, pump, phases, progress };
+  return { game, surface, pump, phases, progress, deadEnds };
 }
 
 function press(target: HTMLElement, type: string, x: number, y: number, pointerId = 1): void {
@@ -199,6 +202,71 @@ describe('Game — pointer play', () => {
     press(harness.surface, 'pointerdown', layout.px[start], layout.py[start]);
     harness.pump.advance(FRAME_MS * 30);
     expect(harness.game.elapsedMs).toBe(0);
+  });
+});
+
+describe('Game — dead ends', () => {
+  /**
+   * Any maximal walk from a dot that is *not* a valid Eulerian start must run
+   * out of moves before it runs out of lines. That is what "not a valid start"
+   * means, so this is a reliable way to reach a dead end on a generated board.
+   */
+  function walkIntoDeadEnd(): void {
+    const { game, surface } = harness;
+    const puzzle = game.currentPuzzle;
+    const layout = game.currentLayout;
+
+    const start = puzzle.nodes.find((node) => !puzzle.validStarts.includes(node.id));
+    expect(start).toBeDefined();
+    const startId = (start as { id: number }).id;
+
+    press(surface, 'pointerdown', layout.px[startId], layout.py[startId]);
+
+    const used = new Set<number>();
+    let node = startId;
+    for (let step = 0; step < puzzle.edges.length; step++) {
+      const next = puzzle.adjacency[node].find((ref) => !used.has(ref.edgeId));
+      if (next === undefined) return;
+      used.add(next.edgeId);
+      press(surface, 'pointermove', layout.px[next.to], layout.py[next.to]);
+      node = next.to;
+    }
+  }
+
+  it('reports a dead end without ending the run', () => {
+    harness.game.loadLevel(3);
+    walkIntoDeadEnd();
+
+    expect(harness.deadEnds.at(-1)).toBe(true);
+    // A dead end is not a loss: the finger is still down and can drag back.
+    expect(harness.game.currentPhase).toBe('drawing');
+    expect(harness.progress.at(-1)).toBeGreaterThan(0);
+  });
+
+  it('clears the dead end once a line is taken back', () => {
+    harness.game.loadLevel(3);
+    walkIntoDeadEnd();
+    expect(harness.deadEnds.at(-1)).toBe(true);
+
+    harness.surface.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }),
+    );
+    expect(harness.deadEnds.at(-1)).toBe(false);
+  });
+
+  it('reports each change once, not once per frame', () => {
+    harness.game.loadLevel(3);
+    walkIntoDeadEnd();
+    const seen = harness.deadEnds.length;
+
+    harness.pump.advance(FRAME_MS * 10);
+    expect(harness.deadEnds).toHaveLength(seen);
+  });
+
+  it('leaves the flag down on a solved board', () => {
+    solveWithPointer(harness);
+    expect(harness.game.currentPhase).toBe('solved');
+    expect(harness.deadEnds.filter(Boolean)).toHaveLength(0);
   });
 });
 

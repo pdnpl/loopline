@@ -330,6 +330,23 @@ body::after {
   white-space: nowrap;
 }
 
+.progress--warn {
+  color: var(--danger);
+  font-weight: 620;
+  animation: warn-in 180ms ease-out;
+}
+
+@keyframes warn-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* ---------- dock ---------- */
 
 .dock {
