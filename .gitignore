@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# cloudflare / wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# test / tooling
+coverage/
+.eslintcache
+
+# editors & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# claude code — machine-local overrides and scratch data
+.claude/settings.local.json
+.claude/data/
+
+# logs
+npm-debug.log*
+yarn-error.log*
+*.log

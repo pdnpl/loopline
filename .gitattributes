@@ -1,0 +1,11 @@
+# Prettier is configured with endOfLine: lf, and .editorconfig agrees.
+# Without this, a Windows checkout converts to CRLF and `npm run format:check`
+# fails on a clone that nobody has touched.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff2 binary

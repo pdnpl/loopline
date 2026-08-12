@@ -1,0 +1,130 @@
+# Loopline
+
+**Draw every line in one unbroken stroke. Never the same line twice.**
+
+A minimalist one-stroke puzzle for the browser. Put a finger on a dot, drag over
+every line exactly once, and do not lift off. It is Euler's bridges of
+Königsberg, sized for a coffee break.
+
+- **No accounts, no server, no leaderboard.** Progress lives in your browser.
+- **~15.5 kB gzipped**, zero runtime dependencies, no web fonts, no network
+  requests after load.
+- **Infinite levels**, generated so that every one of them is provably solvable.
+- **Polish and English**, dark and light, pointer and keyboard.
+
+---
+
+## Play
+
+|                   |                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| **Touch / mouse** | Press a dot and hold. Drag along the lines. Drag back to undo. Lift off and the run ends.          |
+| **Keyboard**      | `Enter` start · arrows or `WASD` move · `Q` `E` `Z` `C` diagonals · `Backspace` undo · `R` restart |
+
+Getting stuck is normal — not every dot is a legal opening. Fail three times on
+a level and the game rings the dots a solution can actually start from.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+Then open <http://localhost:5173>.
+
+| Script              | What it does                               |
+| ------------------- | ------------------------------------------ |
+| `npm run dev`       | Vite dev server with hot reload            |
+| `npm run build`     | Type-check, then build to `dist/`          |
+| `npm run test`      | Vitest, 310 tests                          |
+| `npm run lint`      | ESLint with type-aware rules               |
+| `npm run typecheck` | `tsc --noEmit`                             |
+| `npm run format`    | Prettier, write                            |
+| `npm run verify`    | Everything CI runs, in the same order      |
+| `npm run cf:dev`    | Build, then serve through Wrangler locally |
+| `npm run deploy`    | Build, then `wrangler deploy`              |
+
+## How it is put together
+
+```
+src/
+  core/           the puzzle, with no idea a screen exists
+    rng.ts        seeded mulberry32 — the same level everywhere, every time
+    graph.ts      Eulerian trail theory, Hierholzer's algorithm
+    generator.ts  builds boards by walking a trail (so they cannot be unsolvable)
+    levels.ts     the difficulty curve, as a formula
+  game/
+    trail.ts      finger position -> drawn line. The heart of how it feels.
+    game.ts       input, frame clock, orchestration
+    render.ts     Canvas 2D renderer
+    layout.ts     grid coordinates -> screen pixels
+    particles.ts  fixed-capacity, allocation-free particle pool
+    theme.ts      canvas palettes
+    storage.ts    localStorage, guarded against every way it can fail
+  ui/             DOM chrome: stats, buttons, overlays
+  i18n/           thirty-odd strings in two languages
+tests/            310 tests, including full pointer and keyboard playthroughs
+docs/adr/         why any of this is the way it is
+```
+
+The split that matters: **`core/` knows nothing about rendering**, which is why
+the puzzle logic can be tested exhaustively without a browser, and why the tests
+can verify that levels 1–60 all have a real Eulerian solution.
+
+## Performance notes
+
+The things that would have cost frames, and what was done instead:
+
+- **No `shadowBlur` in the frame loop** — by far the most expensive 2D canvas
+  operation. Glow comes from radial-gradient sprites rendered once and blitted.
+  A test asserts no `shadow*` property is ever touched.
+- **One clock.** Everything time-based is driven by the `requestAnimationFrame`
+  timestamp. No CSS transition is ever read back or relied on for state.
+- **Decoration on the compositor.** The animated background is CSS `transform`
+  and `opacity` only, so it cannot contend with the game loop.
+- **`getCoalescedEvents()`** replays the pointer samples the browser buffered
+  between frames, so a fast swipe on a 120 Hz screen does not cut corners.
+- **Batched drawing.** Every undrawn edge is one path and one `stroke()`.
+- **Device pixel ratio capped at 2.5.** Past that the pixels are invisible and
+  the fill rate is not.
+
+## Deploy
+
+Hosted as an [assets-only Cloudflare Worker](docs/adr/0008-cloudflare-workers-static-assets.md) —
+static files served from the edge with no compute in the request path.
+
+**Automatic.** Every merge to `main` deploys, once two repository secrets exist:
+
+| Secret                  | Where to get it                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard → My Profile → API Tokens → _Edit Cloudflare Workers_ template |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages → Account ID                                 |
+
+Add them under **Settings → Secrets and variables → Actions**. Until they exist
+the deploy job skips itself and CI still passes.
+
+**Manual.**
+
+```bash
+npx wrangler login
+npm run deploy
+```
+
+## Contributing
+
+`main` is protected: no direct pushes, no force pushes, and CI must be green over
+the merge result. See [CONTRIBUTING.md](CONTRIBUTING.md) and
+[ADR-0010](docs/adr/0010-autonomous-pull-request-workflow.md).
+
+## Decisions
+
+Fourteen architecture decision records live in [`docs/adr/`](docs/adr/README.md).
+Start with [ADR-0006](docs/adr/0006-generate-puzzles-by-eulerian-walk.md) (why a
+level can never be unsolvable) and
+[ADR-0013](docs/adr/0013-stroke-model-and-fast-retry.md) (why the stroke feels
+the way it does).
+
+## Licence
+
+[MIT](LICENSE)
