@@ -26,6 +26,7 @@ const en = {
 
   failedTitle: 'You lifted off',
   failedBody: 'The stroke has to be unbroken. Go again.',
+  deadEnd: 'Dead end — drag back',
 
   solvedTitle: 'Solved',
   newBest: 'New best',
@@ -41,15 +42,14 @@ const en = {
   themeDark: 'Dark theme',
   themeLight: 'Light theme',
   help: 'How to play',
-  close: 'Close',
 
   keyboardHint: 'Keyboard: arrows to draw, Backspace to undo, R to restart.',
 
   a11yBoard: 'Puzzle board. Draw one unbroken stroke over every line.',
   a11yStart: 'Stroke started.',
-  a11yProgress: 'Lines left: {n}.',
   a11ySolved: 'Solved in {time}.',
   a11yFailed: 'Run ended. Try again.',
+  a11yDeadEnd: 'Dead end. No line leaves this dot. Go back or start over.',
 } as const;
 
 type Dictionary = Record<keyof typeof en, string>;
@@ -71,6 +71,7 @@ const pl: Dictionary = {
 
   failedTitle: 'Palec oderwany',
   failedBody: 'Pociągnięcie musi być ciągłe. Jeszcze raz.',
+  deadEnd: 'Ślepy zaułek — cofnij palec',
 
   solvedTitle: 'Rozwiązane',
   newBest: 'Nowy rekord',
@@ -86,15 +87,15 @@ const pl: Dictionary = {
   themeDark: 'Motyw ciemny',
   themeLight: 'Motyw jasny',
   help: 'Jak grać',
-  close: 'Zamknij',
 
   keyboardHint: 'Klawiatura: strzałki rysują, Backspace cofa, R restartuje.',
 
   a11yBoard: 'Plansza. Narysuj jedno ciągłe pociągnięcie po wszystkich liniach.',
   a11yStart: 'Rozpoczęto pociągnięcie.',
-  a11yProgress: 'Zostało linii: {n}.',
   a11ySolved: 'Rozwiązane w {time}.',
   a11yFailed: 'Próba zakończona. Spróbuj ponownie.',
+  a11yDeadEnd:
+    'Ślepy zaułek. Z tej kropki nie wychodzi żadna linia. Cofnij się albo zacznij od nowa.',
 };
 
 const messages: Record<Lang, Dictionary> = { en, pl };

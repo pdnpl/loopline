@@ -321,6 +321,10 @@ body::after {
   bottom: 2px;
   transform: translateX(-50%);
   margin: 0;
+  /* Flex, not inline text: whitespace between the two spans is ignored, so the
+     line stays optically centred when the count is empty at a dead end. */
+  display: flex;
+  gap: 0.32em;
   font-size: 12px;
   font-weight: 560;
   letter-spacing: 0.03em;
@@ -328,6 +332,23 @@ body::after {
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   white-space: nowrap;
+}
+
+.progress--warn {
+  color: var(--danger);
+  font-weight: 620;
+  animation: warn-in 180ms ease-out;
+}
+
+@keyframes warn-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* ---------- dock ---------- */

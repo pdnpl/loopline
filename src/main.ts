@@ -77,6 +77,12 @@ const game = new Game({
     onElapsed: (ms) => {
       hud.setTime(ms);
     },
+    onDeadEnd: (active) => {
+      hud.setDeadEnd(active);
+      // Announced only on the way in — the ring and the red counter carry it
+      // visually, but a keyboard player has neither in view.
+      if (active) hud.announce('a11yDeadEnd');
+    },
   },
 });
 
