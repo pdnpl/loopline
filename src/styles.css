@@ -299,6 +299,42 @@ body::after {
   color: var(--text-dim);
 }
 
+.btn--quiet {
+  min-height: 44px;
+  padding: 0 20px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.btn--quiet:hover {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--text);
+}
+
+.btn[hidden] {
+  display: none;
+}
+
+/* A disabled Restart says "nothing to clear" instead of looking unresponsive. */
+.btn:disabled {
+  opacity: 0.34;
+  cursor: default;
+}
+
+.btn:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-dim);
+}
+
+.btn:disabled:active {
+  transform: none;
+}
+
 /* ---------- board ---------- */
 
 .board {
@@ -504,6 +540,11 @@ body::after {
 
 .overlay .btn--primary {
   margin-top: 6px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.overlay .btn--quiet {
   width: 100%;
   max-width: 320px;
 }

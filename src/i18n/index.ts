@@ -31,6 +31,7 @@ const en = {
   solvedTitle: 'Solved',
   newBest: 'New best',
   next: 'Next level',
+  replay: 'Beat this time',
 
   restart: 'Restart',
   retry: 'Try again',
@@ -76,6 +77,7 @@ const pl: Dictionary = {
   solvedTitle: 'Rozwiązane',
   newBest: 'Nowy rekord',
   next: 'Następny poziom',
+  replay: 'Popraw ten czas',
 
   restart: 'Od nowa',
   retry: 'Jeszcze raz',
