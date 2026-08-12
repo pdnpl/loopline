@@ -319,22 +319,6 @@ body::after {
   display: none;
 }
 
-/* A disabled Restart says "nothing to clear" instead of looking unresponsive. */
-.btn:disabled {
-  opacity: 0.34;
-  cursor: default;
-}
-
-.btn:disabled:hover {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--text-dim);
-}
-
-.btn:disabled:active {
-  transform: none;
-}
-
 /* ---------- board ---------- */
 
 .board {
