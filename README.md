@@ -37,7 +37,7 @@ Then open <http://localhost:5173>.
 | ------------------- | ------------------------------------------ |
 | `npm run dev`       | Vite dev server with hot reload            |
 | `npm run build`     | Type-check, then build to `dist/`          |
-| `npm run test`      | Vitest, 335 tests                          |
+| `npm run test`      | Vitest, 338 tests                          |
 | `npm run lint`      | ESLint with type-aware rules               |
 | `npm run typecheck` | `tsc --noEmit`                             |
 | `npm run format`    | Prettier, write                            |
@@ -64,7 +64,7 @@ src/
     storage.ts    localStorage, guarded against every way it can fail
   ui/             DOM chrome: stats, buttons, overlays
   i18n/           thirty-odd strings in two languages
-tests/            335 tests, including full pointer and keyboard playthroughs
+tests/            338 tests, including full pointer and keyboard playthroughs
 docs/adr/         why any of this is the way it is
 ```
 
@@ -119,7 +119,7 @@ the merge result. See [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 ## Decisions
 
-Twenty architecture decision records live in [`docs/adr/`](docs/adr/README.md).
+Twenty-one architecture decision records live in [`docs/adr/`](docs/adr/README.md).
 Start with [ADR-0006](docs/adr/0006-generate-puzzles-by-eulerian-walk.md) (why a
 level can never be unsolvable) and
 [ADR-0013](docs/adr/0013-stroke-model-and-fast-retry.md) (why the stroke feels

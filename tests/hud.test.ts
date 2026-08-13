@@ -208,10 +208,32 @@ describe('Hud — overlay', () => {
 });
 
 describe('Hud — stats', () => {
-  it('shows how many lines are left', () => {
-    hud.setProgress(7);
-    expect(el('progress-value').textContent).toBe('7');
-    expect(el('progress-label').textContent).toBe('lines left');
+  it('shows progress as a fraction and a bar, with no noun to misread', () => {
+    hud.setProgress(5, 12);
+    expect(el('progress-value').textContent).toBe('7/12');
+    expect(el('progress-fill').style.transform).toBe('scaleX(0.5833)');
+  });
+
+  it('reaches a full bar exactly on the last line', () => {
+    hud.setProgress(0, 12);
+    expect(el('progress-value').textContent).toBe('12/12');
+    expect(el('progress-fill').style.transform).toBe('scaleX(1.0000)');
+  });
+
+  it('starts empty on an untouched board', () => {
+    hud.setProgress(12, 12);
+    expect(el('progress-value').textContent).toBe('0/12');
+    expect(el('progress-fill').style.transform).toBe('scaleX(0.0000)');
+  });
+
+  it('carries the words only where a screen reader needs them', () => {
+    hud.setProgress(5, 12);
+    const bar = el('progress');
+    expect(bar.getAttribute('role')).toBe('progressbar');
+    expect(bar.getAttribute('aria-label')).toBe('Lines drawn');
+    expect(bar.getAttribute('aria-valuenow')).toBe('7');
+    expect(bar.getAttribute('aria-valuemax')).toBe('12');
+    expect(bar.getAttribute('aria-valuetext')).toBe('7 of 12 lines drawn');
   });
 
   it('formats times and shows a dash with no record yet', () => {

@@ -62,8 +62,9 @@ export class Hud {
   private readonly statLevel = el('stat-level');
   private readonly statTime = el('stat-time');
   private readonly statBest = el('stat-best');
+  private readonly progress = el('progress');
+  private readonly progressFill = el('progress-fill');
   private readonly progressValue = el('progress-value');
-  private readonly progressLabel = el('progress-label');
 
   private readonly overlay = el('overlay');
   private readonly overlayEyebrow = el('overlay-eyebrow');
@@ -95,7 +96,8 @@ export class Hud {
    *  freshly loaded page is never inside the window — `performance.now()` starts
    *  near zero, so an initial `0` swallowed everything for the first 300 ms. */
   private readonly lastActivation = new Map<string, number>();
-  private remaining = 0;
+  private drawn = 0;
+  private total = 0;
   /** The progress reset is destructive, so it takes two presses. */
   private resetArmed = false;
 
@@ -223,14 +225,31 @@ export class Hud {
     setText(this.statBest, ms === null ? '—' : formatTime(ms, 2));
   }
 
-  setProgress(remaining: number): void {
-    this.remaining = remaining;
+  setProgress(remaining: number, total: number): void {
+    this.total = Math.max(1, total);
+    this.drawn = Math.max(0, this.total - remaining);
     this.renderProgress();
   }
 
+  /**
+   * A bar rather than a sentence. "5 lines left" made a reader ask *which*
+   * lines, and answering it in words needs a noun the player has never been
+   * taught. A fill that grows as the figure is traced names nothing and teaches
+   * itself; the fraction beside it is there for precision, not for reading.
+   */
   private renderProgress(): void {
-    setText(this.progressValue, String(this.remaining));
-    setText(this.progressLabel, this.t('linesLeft'));
+    const fraction = this.drawn / this.total;
+    this.progressFill.style.transform = `scaleX(${fraction.toFixed(4)})`;
+    setText(this.progressValue, `${this.drawn}/${this.total}`);
+
+    // The words live only where a screen reader needs them.
+    this.progress.setAttribute('aria-label', this.t('a11yProgress'));
+    this.progress.setAttribute('aria-valuemax', String(this.total));
+    this.progress.setAttribute('aria-valuenow', String(this.drawn));
+    this.progress.setAttribute(
+      'aria-valuetext',
+      this.t('a11yProgressValue', { drawn: this.drawn, total: this.total }),
+    );
   }
 
   announce(key: MessageKey, params?: Readonly<Record<string, string | number>>): void {

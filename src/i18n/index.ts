@@ -16,7 +16,9 @@ const en = {
   level: 'Level',
   time: 'Time',
   best: 'Best',
-  linesLeft: 'lines left',
+  /** Screen-reader name for the progress bar; the bar itself carries no words. */
+  a11yProgress: 'Lines drawn',
+  a11yProgressValue: '{drawn} of {total} lines drawn',
 
   introTitle: 'How to play',
   introStep1: 'Press any dot and keep holding.',
@@ -67,7 +69,8 @@ const pl: Dictionary = {
   level: 'Poziom',
   time: 'Czas',
   best: 'Rekord',
-  linesLeft: 'linii zostało',
+  a11yProgress: 'Narysowane linie',
+  a11yProgressValue: 'narysowano {drawn} z {total} linii',
 
   introTitle: 'Jak grać',
   introStep1: 'Przyłóż palec do dowolnej kropki i nie odrywaj go.',

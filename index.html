@@ -121,9 +121,19 @@
 
       <main class="board" id="board" tabindex="0" role="application">
         <canvas id="canvas"></canvas>
-        <p class="progress" id="progress">
-          <span id="progress-value">0</span> <span id="progress-label">lines left</span>
-        </p>
+        <div
+          class="progress"
+          id="progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="1"
+          aria-valuenow="0"
+        >
+          <span class="progress__track"
+            ><span class="progress__fill" id="progress-fill"></span
+          ></span>
+          <span class="progress__count" id="progress-value">0/1</span>
+        </div>
       </main>
 
       <footer class="dock" id="dock">
