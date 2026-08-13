@@ -30,43 +30,67 @@ const board = requireElement('board');
 const canvas = requireElement<HTMLCanvasElement>('canvas');
 
 const hud = new Hud({
+  // Exhaustive on purpose. This was a chain of `if` with an unguarded tail that
+  // advanced a level, so adding an overlay kind and forgetting a branch silently
+  // skipped one — which is exactly what happened when the picker was added. The
+  // `never` assignment makes the next omission a compile error instead.
   onOverlayAction: (kind: OverlayKind) => {
-    if (kind === 'intro') {
-      state.introSeen = true;
-      save(state);
-      hud.hideOverlay();
-      board.focus({ preventScroll: true });
-      return;
+    switch (kind) {
+      case 'intro':
+        state.introSeen = true;
+        save(state);
+        hud.hideOverlay();
+        board.focus({ preventScroll: true });
+        return;
+
+      case 'failed':
+        game.restart();
+        board.focus({ preventScroll: true });
+        return;
+
+      case 'levels':
+        // Dismissing the picker is just dismissing it.
+        hud.hideOverlay();
+        board.focus({ preventScroll: true });
+        return;
+
+      case 'solved':
+        goToLevel(game.currentLevel + 1);
+        return;
+
+      default: {
+        const unhandled: never = kind;
+        throw new Error(`Unhandled overlay kind: ${String(unhandled)}`);
+      }
     }
-    if (kind === 'failed') {
-      game.restart();
-      board.focus({ preventScroll: true });
-      return;
-    }
-    if (kind === 'levels') {
-      // Dismissing the picker is just dismissing it. This used to fall through
-      // to the next-level branch, so tapping to close skipped a level.
-      hud.hideOverlay();
-      board.focus({ preventScroll: true });
-      return;
-    }
-    goToLevel(game.currentLevel + 1);
   },
   onOverlaySecondary: (kind: OverlayKind) => {
-    if (kind === 'solved') {
-      // Replays the level just solved, so the best time is chaseable.
-      game.restart();
-      board.focus({ preventScroll: true });
-      return;
-    }
-    if (kind === 'levels') {
-      // The only irreversible action in the game, sitting next to the progress
-      // it erases. The HUD asks once before this lands.
-      resetProgress(state);
-      save(state);
-      hud.hideOverlay();
-      goToLevel(1);
-      hud.announce('resetDone');
+    switch (kind) {
+      case 'solved':
+        // Replays the level just solved, so the best time is chaseable.
+        game.restart();
+        board.focus({ preventScroll: true });
+        return;
+
+      case 'levels':
+        // The only irreversible action in the game, sitting next to the progress
+        // it erases. The HUD asks once before this lands.
+        resetProgress(state);
+        save(state);
+        hud.hideOverlay();
+        goToLevel(1);
+        hud.announce('resetDone');
+        return;
+
+      // The intro and failure screens carry no secondary action.
+      case 'intro':
+      case 'failed':
+        return;
+
+      default: {
+        const unhandled: never = kind;
+        throw new Error(`Unhandled overlay kind: ${String(unhandled)}`);
+      }
     }
   },
   onOpenLevels: () => {
