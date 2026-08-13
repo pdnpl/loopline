@@ -17,8 +17,12 @@ export interface Layout {
   height: number;
 }
 
-/** Keeps a 3x3 board from ballooning on a desktop monitor. */
-const MAX_UNIT = 132;
+/**
+ * Keeps a small board from ballooning on a desktop monitor — but not so tightly
+ * that the puzzle becomes an island. At 132 a 4x4 board filled under a third of
+ * the available area on a laptop, which reads as an unfinished screen.
+ */
+const MAX_UNIT = 190;
 const MIN_UNIT = 34;
 
 function clamp(value: number, min: number, max: number): number {

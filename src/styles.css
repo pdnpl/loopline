@@ -379,6 +379,13 @@ body::after {
   flex: 0 0 auto;
 }
 
+/* Hidden rather than removed: the overlay veil sits above the dock and would
+   swallow presses aimed at it, and collapsing the row would resize the board
+   mid-overlay. */
+.dock--hidden {
+  visibility: hidden;
+}
+
 /* ---------- overlay ---------- */
 
 .overlay {

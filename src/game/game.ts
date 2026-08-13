@@ -173,6 +173,7 @@ export class Game {
     this.resizeObserver.disconnect();
     document.removeEventListener('visibilitychange', this.handleVisible);
     globalThis.removeEventListener('pageshow', this.handleVisible);
+    document.removeEventListener('keydown', this.onGlobalKeyDown);
   }
 
   private readonly handleVisible = (): void => {
@@ -264,7 +265,7 @@ export class Game {
   private buildLayout(): Layout {
     const width = Math.max(1, this.surfaceRect.width);
     const height = Math.max(1, this.surfaceRect.height);
-    const padding = Math.max(30, Math.min(width, height) * 0.1);
+    const padding = Math.max(24, Math.min(width, height) * 0.07);
     return computeLayout(this.puzzle, width, height, padding);
   }
 
@@ -453,7 +454,22 @@ export class Game {
 
   private attachKeyboard(): void {
     this.surface.addEventListener('keydown', this.onKeyDown);
+    // Restart is advertised in the help screen as working anywhere, so it is
+    // bound at the document too. Drawing keys stay on the board, where focus
+    // means "I am playing"; restart should not depend on where focus drifted.
+    document.addEventListener('keydown', this.onGlobalKeyDown);
   }
+
+  private readonly onGlobalKeyDown = (event: KeyboardEvent): void => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key.toLowerCase() !== 'r') return;
+    if (event.target === this.surface) return; // the board handler has it
+    const target = event.target;
+    if (target instanceof HTMLElement && target.isContentEditable) return;
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+    event.preventDefault();
+    this.restart();
+  };
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
