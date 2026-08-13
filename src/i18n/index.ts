@@ -26,7 +26,6 @@ const en = {
 
   failedTitle: 'You lifted off',
   failedBody: 'The stroke has to be unbroken. Go again.',
-  deadEnd: 'Dead end — drag back',
 
   solvedTitle: 'Solved',
   newBest: 'New best',
@@ -37,7 +36,6 @@ const en = {
   levelsTitle: 'Choose a level',
   levelsHint: 'Every level you have reached. Tap one to play it.',
   levelSolved: 'solved in {time}',
-  close: 'Close',
   retry: 'Try again',
   tapAnywhere: 'or tap anywhere',
   resetProgress: 'Start the game over',
@@ -57,7 +55,6 @@ const en = {
   a11yStart: 'Stroke started.',
   a11ySolved: 'Solved in {time}.',
   a11yFailed: 'Run ended. Try again.',
-  a11yDeadEnd: 'Dead end. No line leaves this dot. Go back or start over.',
   a11yRestarted: 'Board cleared. Level {level}.',
 } as const;
 
@@ -80,7 +77,6 @@ const pl: Dictionary = {
 
   failedTitle: 'Palec oderwany',
   failedBody: 'Pociągnięcie musi być ciągłe. Jeszcze raz.',
-  deadEnd: 'Ślepy zaułek — cofnij palec',
 
   solvedTitle: 'Rozwiązane',
   newBest: 'Nowy rekord',
@@ -91,7 +87,6 @@ const pl: Dictionary = {
   levelsTitle: 'Wybierz poziom',
   levelsHint: 'Każdy poziom, do którego dotarłeś. Dotknij, żeby zagrać.',
   levelSolved: 'rozwiązany w {time}',
-  close: 'Zamknij',
   retry: 'Jeszcze raz',
   tapAnywhere: 'albo dotknij gdziekolwiek',
   resetProgress: 'Zacznij grę od nowa',
@@ -112,8 +107,6 @@ const pl: Dictionary = {
   a11ySolved: 'Rozwiązane w {time}.',
   a11yFailed: 'Próba zakończona. Spróbuj ponownie.',
   a11yRestarted: 'Plansza wyczyszczona. Poziom {level}.',
-  a11yDeadEnd:
-    'Ślepy zaułek. Z tej kropki nie wychodzi żadna linia. Cofnij się albo zacznij od nowa.',
 };
 
 const messages: Record<Lang, Dictionary> = { en, pl };

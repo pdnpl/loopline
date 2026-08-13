@@ -100,16 +100,6 @@ export function currentNode(trail: Trail): number {
   return trail.nodes.length === 0 ? -1 : trail.nodes[trail.nodes.length - 1];
 }
 
-/** True when no undrawn edge leaves the current dot — the player must back up. */
-export function isDeadEnd(trail: Trail, puzzle: Puzzle): boolean {
-  const node = currentNode(trail);
-  if (node < 0) return false;
-  for (const ref of puzzle.adjacency[node]) {
-    if (trail.used[ref.edgeId] === 0) return false;
-  }
-  return true;
-}
-
 /** Nearest dot to a point, or `-1` when nothing is within `radius`. */
 export function nodeAt(
   puzzle: Puzzle,

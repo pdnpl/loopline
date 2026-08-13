@@ -9,7 +9,6 @@ import {
   currentNode,
   edgesRemaining,
   isComplete,
-  isDeadEnd,
   nodeAt,
   startAt,
   tipPosition,
@@ -75,22 +74,6 @@ const line = (): Board =>
       [0, 1],
       [1, 2],
       [2, 3],
-    ],
-  );
-
-/** A three-armed star: walking into any arm strands you there. */
-const star = (): Board =>
-  board(
-    [
-      [1, 1],
-      [1, 0],
-      [0, 2],
-      [2, 2],
-    ],
-    [
-      [0, 1],
-      [0, 2],
-      [0, 3],
     ],
   );
 
@@ -227,22 +210,6 @@ describe('trail', () => {
 
     expect(trail.edges).toEqual([0, 1, 2]);
     expect(isComplete(trail, scene.puzzle)).toBe(true);
-  });
-
-  it('reports a dead end when every edge out of the current dot is drawn', () => {
-    const scene = star();
-    const trail = createTrail(scene.puzzle);
-    startAt(trail, 1);
-    expect(isDeadEnd(trail, scene.puzzle)).toBe(false);
-
-    move(scene, trail, 100, 95);
-    expect(currentNode(trail)).toBe(0);
-    expect(isDeadEnd(trail, scene.puzzle)).toBe(false);
-
-    move(scene, trail, 5, 195);
-    expect(currentNode(trail)).toBe(2);
-    expect(isDeadEnd(trail, scene.puzzle)).toBe(true);
-    expect(isComplete(trail, scene.puzzle)).toBe(false);
   });
 
   it('ignores directions with no edge behind them', () => {

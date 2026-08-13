@@ -43,6 +43,13 @@ const hud = new Hud({
       board.focus({ preventScroll: true });
       return;
     }
+    if (kind === 'levels') {
+      // Dismissing the picker is just dismissing it. This used to fall through
+      // to the next-level branch, so tapping to close skipped a level.
+      hud.hideOverlay();
+      board.focus({ preventScroll: true });
+      return;
+    }
     goToLevel(game.currentLevel + 1);
   },
   onOverlaySecondary: (kind: OverlayKind) => {
@@ -100,12 +107,6 @@ const game = new Game({
     },
     onElapsed: (ms) => {
       hud.setTime(ms);
-    },
-    onDeadEnd: (active) => {
-      hud.setDeadEnd(active);
-      // Announced only on the way in — the ring and the red counter carry it
-      // visually, but a keyboard player has neither in view.
-      if (active) hud.announce('a11yDeadEnd');
     },
   },
 });
