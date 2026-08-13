@@ -504,6 +504,75 @@ body::after {
   display: none;
 }
 
+/* ---------- level picker ---------- */
+
+.levels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+  max-height: 42vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 2px;
+  margin: 2px 0 4px;
+}
+
+.levels[hidden] {
+  display: none;
+}
+
+.level-chip {
+  font: inherit;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.level-chip:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.level-chip:active {
+  transform: scale(0.94);
+}
+
+/* Solved levels read as done without needing a second glyph. */
+.level-chip--solved {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.level-chip--current {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.level-chip--current:hover {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+  filter: brightness(1.08);
+}
+
 .steps li {
   counter-increment: step;
   display: flex;

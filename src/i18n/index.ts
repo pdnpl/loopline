@@ -33,9 +33,11 @@ const en = {
   next: 'Next level',
   replay: 'Beat this time',
 
-  // Scoped on purpose. "Restart" alone reads as "restart the game", which this
-  // button has never done — see ADR-0018.
-  restart: 'Restart level',
+  levels: 'Levels',
+  levelsTitle: 'Choose a level',
+  levelsHint: 'Every level you have reached. Tap one to play it.',
+  levelSolved: 'solved in {time}',
+  close: 'Close',
   retry: 'Try again',
   tapAnywhere: 'or tap anywhere',
   resetProgress: 'Start the game over',
@@ -85,9 +87,11 @@ const pl: Dictionary = {
   next: 'Następny poziom',
   replay: 'Popraw ten czas',
 
-  // "Od nowa" was the whole bug: in Polish it promises restarting the *game*.
-  // This button clears the board of the level you are on, and now says so.
-  restart: 'Powtórz poziom',
+  levels: 'Poziomy',
+  levelsTitle: 'Wybierz poziom',
+  levelsHint: 'Każdy poziom, do którego dotarłeś. Dotknij, żeby zagrać.',
+  levelSolved: 'rozwiązany w {time}',
+  close: 'Zamknij',
   retry: 'Jeszcze raz',
   tapAnywhere: 'albo dotknij gdziekolwiek',
   resetProgress: 'Zacznij grę od nowa',

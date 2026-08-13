@@ -30,7 +30,8 @@ beforeEach(() => {
   handlers = {
     onOverlayAction: vi.fn(),
     onOverlaySecondary: vi.fn(),
-    onRestart: vi.fn(),
+    onOpenLevels: vi.fn(),
+    onPickLevel: vi.fn(),
     onToggleLang: vi.fn(),
     onCycleTheme: vi.fn(),
     onHelp: vi.fn(),
@@ -39,34 +40,75 @@ beforeEach(() => {
   hud.setLang('en');
 });
 
-describe('Hud — restart button', () => {
-  it('is never disabled, including on an untouched board', () => {
-    // A greyed-out control reads as broken, and restarting an untouched board
-    // is harmless, so the button stays live in every state.
-    expect(el<HTMLButtonElement>('btn-restart').disabled).toBe(false);
-    hud.setProgress(12);
-    expect(el<HTMLButtonElement>('btn-restart').disabled).toBe(false);
+describe('Hud — levels button', () => {
+  it('is never disabled', () => {
+    expect(el<HTMLButtonElement>('btn-levels').disabled).toBe(false);
   });
 
-  it('fires on click, and does not intercept pointerdown', () => {
-    // Deliberately click-only: preventDefault on pointerdown suppressed the
-    // button's own :active state, so the control stopped looking pressed.
-    el('btn-restart').dispatchEvent(pointerEvent('pointerdown', 0, 0));
-    expect(handlers.onRestart).not.toHaveBeenCalled();
+  it('opens the picker on click, and does not intercept pointerdown', () => {
+    // Click-only on purpose: preventDefault on pointerdown suppresses the
+    // button's own :active state, which is what made the old control feel dead.
+    el('btn-levels').dispatchEvent(pointerEvent('pointerdown', 0, 0));
+    expect(handlers.onOpenLevels).not.toHaveBeenCalled();
 
-    el('btn-restart').dispatchEvent(pointerEvent('click', 0, 0));
-    expect(handlers.onRestart).toHaveBeenCalledTimes(1);
+    el('btn-levels').dispatchEvent(pointerEvent('click', 0, 0));
+    expect(handlers.onOpenLevels).toHaveBeenCalledTimes(1);
   });
 
   it('is not silenced by another control having just been used', () => {
     // The guard used to be one shared stopwatch, so dismissing an overlay made
-    // the next Restart press vanish.
+    // the next dock press vanish.
     hud.showOverlay('failed');
     el('overlay').dispatchEvent(pointerEvent('pointerdown', 10, 10));
     hud.hideOverlay();
 
-    el('btn-restart').dispatchEvent(pointerEvent('click', 0, 0));
-    expect(handlers.onRestart).toHaveBeenCalledTimes(1);
+    el('btn-levels').dispatchEvent(pointerEvent('click', 0, 0));
+    expect(handlers.onOpenLevels).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Hud — level picker', () => {
+  function open(current = 3, unlocked = 5, best: Record<string, number> = { '2': 4210 }): void {
+    hud.showOverlay('levels', { current, unlocked, best });
+  }
+
+  it('offers every level up to the highest reached', () => {
+    open();
+    const chips = [...el('overlay-levels').querySelectorAll('button')];
+    expect(chips.map((c) => c.textContent)).toEqual(['1', '2', '3', '4', '5']);
+  });
+
+  it('marks the current level and the solved ones', () => {
+    open();
+    const chips = [...el('overlay-levels').querySelectorAll('button')];
+    expect(chips[2].classList.contains('level-chip--current')).toBe(true);
+    expect(chips[1].classList.contains('level-chip--solved')).toBe(true);
+    expect(chips[0].classList.contains('level-chip--solved')).toBe(false);
+    expect(chips[1].getAttribute('aria-label')).toBe('Level 2, solved in 4.21');
+  });
+
+  it('never offers a level that has not been reached', () => {
+    open(1, 1, {});
+    expect(el('overlay-levels').querySelectorAll('button')).toHaveLength(1);
+  });
+
+  it('picks a level without also closing via the tap-anywhere veil', () => {
+    open();
+    const chips = [...el('overlay-levels').querySelectorAll('button')];
+    chips[0].dispatchEvent(pointerEvent('pointerdown', 10, 10));
+    chips[0].dispatchEvent(pointerEvent('click', 10, 10));
+
+    expect(handlers.onPickLevel).toHaveBeenCalledWith(1);
+    // Without stopPropagation the veil would fire too, closing the picker and
+    // swallowing the choice.
+    expect(handlers.onOverlayAction).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds the grid each time it opens', () => {
+    open(3, 5);
+    hud.hideOverlay();
+    open(1, 2, {});
+    expect(el('overlay-levels').querySelectorAll('button')).toHaveLength(2);
   });
 });
 
@@ -86,12 +128,15 @@ describe('Hud — dock visibility', () => {
 
 describe('Hud — overlay', () => {
   it('offers the right secondary action per screen', () => {
-    hud.showOverlay('intro');
+    hud.showOverlay('levels', { current: 1, unlocked: 3 });
     expect(el('overlay-secondary').hidden).toBe(false);
     expect(el('overlay-secondary').textContent).toBe('Start the game over');
 
-    // Nothing competes with the retry on the failure screen.
+    // Nothing competes with the retry on the failure screen, and the intro is
+    // instructions only.
     hud.showOverlay('failed');
+    expect(el('overlay-secondary').hidden).toBe(true);
+    hud.showOverlay('intro');
     expect(el('overlay-secondary').hidden).toBe(true);
 
     hud.showOverlay('solved', { timeMs: 4210 });
@@ -104,31 +149,26 @@ describe('Hud — overlay', () => {
     // guard collapses those into one activation. Two *separate* presses need the
     // clock to move, so it is driven explicitly here.
     const clock = vi.spyOn(performance, 'now');
-    hud.showOverlay('intro');
+    hud.showOverlay('levels', { current: 1, unlocked: 3 });
 
     clock.mockReturnValue(10_000);
-    el('overlay-secondary').dispatchEvent(pointerEvent('pointerdown', 10, 10));
+    el('overlay-secondary').dispatchEvent(pointerEvent('click', 10, 10));
     expect(handlers.onOverlaySecondary).not.toHaveBeenCalled();
     expect(el('overlay-secondary').textContent).toBe('Erase progress? Press again');
 
-    // The rest of that same press must not confirm it.
-    clock.mockReturnValue(10_020);
-    el('overlay-secondary').dispatchEvent(pointerEvent('click', 10, 10));
-    expect(handlers.onOverlaySecondary).not.toHaveBeenCalled();
-
     clock.mockReturnValue(11_000);
-    el('overlay-secondary').dispatchEvent(pointerEvent('pointerdown', 10, 10));
-    expect(handlers.onOverlaySecondary).toHaveBeenCalledWith('intro');
+    el('overlay-secondary').dispatchEvent(pointerEvent('click', 10, 10));
+    expect(handlers.onOverlaySecondary).toHaveBeenCalledWith('levels');
     clock.mockRestore();
   });
 
   it('disarms the confirmation when the overlay is dismissed', () => {
-    hud.showOverlay('intro');
-    el('overlay-secondary').dispatchEvent(pointerEvent('pointerdown', 10, 10));
+    hud.showOverlay('levels', { current: 1, unlocked: 3 });
+    el('overlay-secondary').dispatchEvent(pointerEvent('click', 10, 10));
     expect(el('overlay-secondary').textContent).toBe('Erase progress? Press again');
 
     hud.hideOverlay();
-    hud.showOverlay('intro');
+    hud.showOverlay('levels', { current: 1, unlocked: 3 });
     expect(el('overlay-secondary').textContent).toBe('Start the game over');
   });
 
@@ -140,10 +180,12 @@ describe('Hud — overlay', () => {
 
   it('tapping replay does not also advance to the next level', () => {
     hud.showOverlay('solved', { timeMs: 4210 });
+    // A real press is both events; the pointerdown must be stopped from reaching
+    // the veil, and the click is what acts.
     el('overlay-secondary').dispatchEvent(pointerEvent('pointerdown', 10, 10));
+    el('overlay-secondary').dispatchEvent(pointerEvent('click', 10, 10));
 
-    // The secondary sits inside the tap-anywhere region; without
-    // stopPropagation this would replay *and* skip forward a level.
+    // Without stopPropagation this would replay *and* skip forward a level.
     expect(handlers.onOverlaySecondary).toHaveBeenCalledWith('solved');
     expect(handlers.onOverlayAction).not.toHaveBeenCalled();
   });
