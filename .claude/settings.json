@@ -3,6 +3,8 @@
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [
+      "Bash",
+      "PowerShell",
       "Read",
       "Edit",
       "Write",
@@ -10,6 +12,8 @@
       "Grep",
       "NotebookEdit",
       "TodoWrite",
+      "WebFetch",
+      "WebSearch",
       "Bash(npm *)",
       "Bash(npx *)",
       "Bash(pnpm *)",

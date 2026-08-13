@@ -160,30 +160,67 @@ export function pointerEvent(type: string, x: number, y: number, pointerId = 1):
   return event;
 }
 
+export interface PointerTargetOptions {
+  /**
+   * Make the pointer-capture calls throw, as browsers do when the pointer is
+   * no longer active by the time the handler runs.
+   */
+  captureThrows?: boolean;
+}
+
+export interface PointerTarget {
+  /** Changes the element's reported box, for testing resize handling. */
+  resize(width: number, height: number): void;
+}
+
 /** Gives an element the pointer-capture API and a fixed on-screen box. */
-export function preparePointerTarget(element: HTMLElement, width: number, height: number): void {
+export function preparePointerTarget(
+  element: HTMLElement,
+  width: number,
+  height: number,
+  options: PointerTargetOptions = {},
+): PointerTarget {
   const captured = new Set<number>();
   Object.assign(element, {
     setPointerCapture(id: number): void {
+      if (options.captureThrows === true) throw new Error('InvalidPointerId');
       captured.add(id);
     },
     releasePointerCapture(id: number): void {
+      if (options.captureThrows === true) throw new Error('InvalidPointerId');
       captured.delete(id);
     },
     hasPointerCapture(id: number): boolean {
+      if (options.captureThrows === true) throw new Error('InvalidPointerId');
       return captured.has(id);
     },
   });
 
+  let box = { width, height };
   element.getBoundingClientRect = (): DOMRect => ({
     x: 0,
     y: 0,
     left: 0,
     top: 0,
-    right: width,
-    bottom: height,
-    width,
-    height,
+    right: box.width,
+    bottom: box.height,
+    width: box.width,
+    height: box.height,
     toJSON: () => ({}),
   });
+
+  return {
+    resize(nextWidth: number, nextHeight: number): void {
+      box = { width: nextWidth, height: nextHeight };
+    },
+  };
+}
+
+/**
+ * Marks an event as reporting no coalesced samples — what browsers do for
+ * untrusted events and when high-frequency input is restricted.
+ */
+export function withEmptyCoalesced(event: Event): Event {
+  Object.defineProperty(event, 'getCoalescedEvents', { value: (): Event[] => [] });
+  return event;
 }

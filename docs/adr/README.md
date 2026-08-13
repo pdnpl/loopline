@@ -23,3 +23,4 @@ the old one `Superseded by ADR-XXXX`.
 | [0014](0014-no-web-fonts.md)                            | No web fonts                                        | Accepted                                 |
 | [0015](0015-a-run-starts-at-the-first-line.md)          | A run starts at the first line, not the first touch | Accepted (decision 2 superseded by 0016) |
 | [0016](0016-restart-always-answers.md)                  | Restart always answers the press                    | Accepted                                 |
+| [0017](0017-optional-platform-apis-must-fail-soft.md)   | Optional platform APIs must fail soft               | Accepted                                 |

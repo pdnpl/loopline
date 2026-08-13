@@ -157,3 +157,9 @@ if (!state.introSeen) {
 } else {
   board.focus({ preventScroll: true });
 }
+
+if (import.meta.env.DEV) {
+  // Console handle for driving a real board while debugging. The guard is
+  // statically false in a production build, so this is dropped at bundle time.
+  (globalThis as unknown as Record<string, unknown>).loopline = { game, hud, state };
+}
