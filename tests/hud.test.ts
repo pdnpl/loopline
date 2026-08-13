@@ -211,19 +211,19 @@ describe('Hud — stats', () => {
   it('shows progress as a fraction and a bar, with no noun to misread', () => {
     hud.setProgress(5, 12);
     expect(el('progress-value').textContent).toBe('7/12');
-    expect(el('progress-fill').style.transform).toBe('scaleX(0.5833)');
+    expect(el('progress-fill').style.width).toBe('58.33%');
   });
 
   it('reaches a full bar exactly on the last line', () => {
     hud.setProgress(0, 12);
     expect(el('progress-value').textContent).toBe('12/12');
-    expect(el('progress-fill').style.transform).toBe('scaleX(1.0000)');
+    expect(el('progress-fill').style.width).toBe('100%');
   });
 
   it('starts empty on an untouched board', () => {
     hud.setProgress(12, 12);
     expect(el('progress-value').textContent).toBe('0/12');
-    expect(el('progress-fill').style.transform).toBe('scaleX(0.0000)');
+    expect(el('progress-fill').style.width).toBe('0%');
   });
 
   it('carries the words only where a screen reader needs them', () => {

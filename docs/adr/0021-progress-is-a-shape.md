@@ -80,3 +80,40 @@ softens a discrete step, never read back, in line with
   glance, and near the end the faint remainder is easy to miss.
 - **Bar with no number.** Cleaner, but loses exactly the endgame precision that
   makes the readout worth having.
+
+---
+
+## Addendum, same day: weight, width and the frame
+
+Follow-up feedback: _"enlarge the bar, make it the style and thickness of the
+lines connecting the dots, roughly two thirds the width of the top panel — it is
+very thin and almost invisible now. Move it away from the frame, make the
+numerals as big as in the Levels button. And let us finally settle what that
+frame is for — sometimes it is there, sometimes it disappears."_
+
+**The bar.** 3 px was a hairline sitting on the board's edge. It is now 10 px
+with rounded ends, filled with the canvas stroke's own three colour stops, so it
+reads as the line you are tracing laid out flat rather than as generic chrome.
+Width is `66%` of the board — the same box as the header above it. The numerals
+move from 11 px to **16 px**, matching `.btn`, and from `--text-faint` to
+`--text-dim`. Bottom offset 2 px → 18 px.
+
+The fill animates `width` rather than `transform: scaleX()`. Scaling squashes the
+rounded caps into ellipses — invisible on a 3 px hairline, obvious at 10 px. The
+bar changes a handful of times per level, not per frame, so the layout cost is
+nothing.
+
+**The frame is now deliberate.** It was the board's `:focus-visible` outline,
+which is why it appeared and vanished on focus heuristics with no relation to
+game state — an accident being read as a feature. The board now carries a
+permanent `box-shadow: inset 0 0 0 1px var(--border)`, matching the header and
+dock panels so the three read as one system, and keyboard focus is a thicker
+accent outline that is clearly a different thing.
+
+An inset shadow rather than a `border` on purpose: the canvas is positioned
+against this element's box and `computeLayout` reads its rect, so a real border
+would put a pixel between the layout coordinates and the painted pixels.
+
+It stays on the board rather than wrapping the whole game, as the report
+wondered: the header and dock already have their own borders, and a frame around
+everything would double up on them.
