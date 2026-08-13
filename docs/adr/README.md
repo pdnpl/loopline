@@ -27,3 +27,4 @@ the old one `Superseded by ADR-XXXX`.
 | [0018](0018-a-label-is-a-promise.md)                    | A label is a promise, and a press must be unmistakable | Accepted (decision 1 superseded by 0019) |
 | [0019](0019-the-dock-holds-navigation.md)               | The dock holds navigation, not a second retry button   | Accepted                                 |
 | [0020](0020-trim-the-interface.md)                      | Trim the interface to what it can honour               | Accepted                                 |
+| [0021](0021-progress-is-a-shape.md)                     | Progress is a shape, not a sentence                    | Accepted                                 |
