@@ -11,20 +11,28 @@ import { translate } from '../i18n';
 import type { ThemePreference } from '../game/theme';
 import { formatTime } from './format';
 
-export type OverlayKind = 'intro' | 'failed' | 'solved';
+export type OverlayKind = 'intro' | 'failed' | 'solved' | 'levels';
 
 export interface OverlayData {
   /** Completion time in ms, for the solved screen. */
   timeMs?: number;
   isNewBest?: boolean;
+  /** Level being played, for the level picker. */
+  current?: number;
+  /** Highest level reached — everything from 1 up to here is playable. */
+  unlocked?: number;
+  /** Best time per level, keyed by level number as a string. */
+  best?: Readonly<Record<string, number>>;
 }
 
 export interface HudHandlers {
-  /** Overlay primary action — retry, next level, or dismiss the intro. */
+  /** Overlay primary action — retry, next level, close, or dismiss the intro. */
   onOverlayAction(kind: OverlayKind): void;
-  /** Overlay secondary action. Only the solved screen has one: replay. */
+  /** Overlay secondary action: replay on solved, erase progress on the picker. */
   onOverlaySecondary(kind: OverlayKind): void;
-  onRestart(): void;
+  /** The dock button. Opens the level picker. */
+  onOpenLevels(): void;
+  onPickLevel(level: number): void;
   onToggleLang(): void;
   onCycleTheme(): void;
   onHelp(): void;
@@ -71,7 +79,8 @@ export class Hud {
   private readonly btnLang = el<HTMLButtonElement>('btn-lang');
   private readonly btnTheme = el<HTMLButtonElement>('btn-theme');
   private readonly btnHelp = el<HTMLButtonElement>('btn-help');
-  private readonly btnRestart = el<HTMLButtonElement>('btn-restart');
+  private readonly btnLevels = el<HTMLButtonElement>('btn-levels');
+  private readonly overlayLevels = el('overlay-levels');
   private readonly dock = el('dock');
   private readonly live = el('live');
 
@@ -103,26 +112,26 @@ export class Hud {
       this.activateOverlay();
     });
 
-    // The secondary action sits inside the tap-anywhere region, so it has to
-    // stop the event reaching the veil or it would fire the primary action too.
+    // Anything inside the tap-anywhere veil must stop its pointerdown reaching
+    // the veil, or it would fire the primary action too. It must NOT
+    // preventDefault, though: that is what suppresses a button's own `:active`
+    // state and makes it feel dead (ADR-0018). Stop the bubble, act on click.
     this.overlaySecondary.addEventListener('pointerdown', (event) => {
-      event.preventDefault();
       event.stopPropagation();
-      this.activateSecondary();
     });
     this.overlaySecondary.addEventListener('click', (event) => {
       event.stopPropagation();
       this.activateSecondary();
     });
 
-    // Plain `click`, and no preventDefault. The dock button is not on the fast
+    // Plain `click`, and no preventDefault. This is navigation, not the fast
     // retry path — that is the overlay — so there is nothing to gain from
     // pointerdown, and preventDefault there suppressed the compatibility mouse
     // events, which took the button's own `:active` press state and focus with
     // them. The control looked dead because it stopped looking pressed.
-    this.btnRestart.addEventListener('click', () => {
-      this.guard('restart', () => {
-        handlers.onRestart();
+    this.btnLevels.addEventListener('click', () => {
+      this.guard('levels', () => {
+        handlers.onOpenLevels();
       });
     });
 
@@ -159,7 +168,7 @@ export class Hud {
     this.guard('overlay-secondary', () => {
       // Erasing progress is the one irreversible thing a player can do here, so
       // it asks once. The first press only changes the label.
-      if (kind === 'intro' && !this.resetArmed) {
+      if (kind === 'levels' && !this.resetArmed) {
         this.resetArmed = true;
         setText(this.overlaySecondary, this.t('resetConfirm'));
         return;
@@ -187,7 +196,7 @@ export class Hud {
     setText(this.btnLang, lang.toUpperCase());
     this.btnLang.setAttribute('aria-label', this.t('language'));
     this.btnHelp.setAttribute('aria-label', this.t('help'));
-    setText(this.btnRestart, this.t('restart'));
+    setText(this.btnLevels, this.t('levels'));
     this.renderProgress();
 
     el('board').setAttribute('aria-label', this.t('a11yBoard'));
@@ -277,15 +286,70 @@ export class Hud {
     return this.overlayKind !== null;
   }
 
+  /**
+   * Builds the level grid. Every level up to the highest reached is playable —
+   * a level you could not solve should not be a wall, and a level you enjoyed
+   * should be reachable again without replaying everything before it.
+   */
+  private renderLevels(data: OverlayData): void {
+    const current = data.current ?? 1;
+    const unlocked = Math.max(1, data.unlocked ?? 1);
+    const best = data.best ?? {};
+
+    this.overlayLevels.replaceChildren();
+
+    for (let level = 1; level <= unlocked; level++) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'level-chip';
+      chip.textContent = String(level);
+
+      const time = best[String(level)];
+      const label = [`${this.t('level')} ${level}`];
+      if (time !== undefined) {
+        chip.classList.add('level-chip--solved');
+        label.push(this.t('levelSolved', { time: formatTime(time, 2) }));
+      }
+      if (level === current) {
+        chip.classList.add('level-chip--current');
+        chip.setAttribute('aria-current', 'true');
+      }
+      chip.setAttribute('aria-label', label.join(', '));
+
+      chip.addEventListener('pointerdown', (event) => {
+        event.stopPropagation();
+      });
+      chip.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.guard('level-chip', () => {
+          this.handlers.onPickLevel(level);
+        });
+      });
+
+      this.overlayLevels.append(chip);
+    }
+  }
+
   private renderOverlay(kind: OverlayKind, data: OverlayData): void {
     this.overlay.classList.toggle('overlay--failed', kind === 'failed');
     this.overlaySteps.hidden = kind !== 'intro';
     this.overlayTime.hidden = kind !== 'solved';
-    // The solved screen offers a replay; the intro is where the one destructive
-    // action lives, tucked behind the help button rather than on the board.
-    this.overlaySecondary.hidden = kind === 'failed';
+    // The solved screen offers a replay; the level picker is where the one
+    // destructive action lives, next to the progress it would erase.
+    this.overlaySecondary.hidden = kind === 'failed' || kind === 'intro';
+    this.overlayLevels.hidden = kind !== 'levels';
     if (kind === 'solved') setText(this.overlaySecondary, this.t('replay'));
-    if (kind === 'intro') setText(this.overlaySecondary, this.t('resetProgress'));
+    if (kind === 'levels') setText(this.overlaySecondary, this.t('resetProgress'));
+
+    if (kind === 'levels') {
+      setText(this.overlayEyebrow, '');
+      setText(this.overlayTitle, this.t('levelsTitle'));
+      setText(this.overlayBody, this.t('levelsHint'));
+      setText(this.overlayAction, this.t('close'));
+      setText(this.overlayHint, this.t('tapAnywhere'));
+      this.renderLevels(data);
+      return;
+    }
 
     if (kind === 'intro') {
       setText(this.overlayEyebrow, this.t('tagline'));

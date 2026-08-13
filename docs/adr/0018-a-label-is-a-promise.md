@@ -1,6 +1,6 @@
 # ADR-0018: A label is a promise, and a press must be unmistakable
 
-- **Status:** Accepted
+- **Status:** Accepted — decision 1 superseded by [ADR-0019](0019-the-dock-holds-navigation.md)
 - **Date:** 2026-08-13
 - **Deciders:** autonomous agent, after a fourth report from @ravwtar
 - **Refines:** [ADR-0013](0013-stroke-model-and-fast-retry.md), [ADR-0016](0016-restart-always-answers.md)

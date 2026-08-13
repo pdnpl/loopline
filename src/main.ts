@@ -52,9 +52,9 @@ const hud = new Hud({
       board.focus({ preventScroll: true });
       return;
     }
-    if (kind === 'intro') {
-      // The only irreversible action in the game, and the one the words
-      // "od nowa" actually promise. Confirmed twice by the HUD before it lands.
+    if (kind === 'levels') {
+      // The only irreversible action in the game, sitting next to the progress
+      // it erases. The HUD asks once before this lands.
       resetProgress(state);
       save(state);
       hud.hideOverlay();
@@ -62,12 +62,16 @@ const hud = new Hud({
       hud.announce('resetDone');
     }
   },
-  onRestart: () => {
-    game.restart();
-    // Focus deliberately stays on the button. Stealing it back to the board made
-    // the board's focus ring blink on every press — which the player read as the
-    // only thing the button did — and meant a second Enter went nowhere.
-    hud.announce('a11yRestarted', { level: game.currentLevel });
+  onOpenLevels: () => {
+    hud.showOverlay('levels', {
+      current: game.currentLevel,
+      unlocked: state.level,
+      best: state.best,
+    });
+  },
+  onPickLevel: (level) => {
+    hud.hideOverlay();
+    goToLevel(level);
   },
   onToggleLang: () => {
     lang = lang === 'pl' ? 'en' : 'pl';
@@ -116,6 +120,9 @@ function handlePhase(phase: Phase): void {
     case 'idle':
       hud.hideOverlay();
       hud.setTime(0);
+      // Covers every route back to a clean board — the R shortcut, a retry, a
+      // replay, a level change — so the reset is never silent for assistive tech.
+      hud.announce('a11yRestarted', { level: game.currentLevel });
       return;
 
     case 'failed':
