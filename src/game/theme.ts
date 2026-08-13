@@ -26,8 +26,6 @@ export interface Palette {
   head: string;
   /** Ring shown on possible starting dots when a hint is due. */
   hint: string;
-  /** Current dot when every edge leaving it is already drawn. */
-  deadEnd: string;
   particle: string;
   /**
    * Whether glow passes composite additively. Additive light reads as glow on a
@@ -49,7 +47,6 @@ const DARK: Palette = {
   strokeGlow: 'rgba(129, 140, 248, 0.40)',
   head: '#FFFFFF',
   hint: 'rgba(94, 234, 212, 0.85)',
-  deadEnd: '#FB7185',
   particle: '#A5B4FC',
   additiveGlow: true,
 };
@@ -66,7 +63,6 @@ const LIGHT: Palette = {
   strokeGlow: 'rgba(79, 70, 229, 0.22)',
   head: '#020617',
   hint: '#0D9488',
-  deadEnd: '#E11D48',
   particle: '#6366F1',
   additiveGlow: false,
 };

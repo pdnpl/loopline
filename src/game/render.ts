@@ -34,8 +34,6 @@ export interface FrameInput {
   nodePulse: Float32Array;
   /** Dots to ring as possible starting points. Empty when no hint is due. */
   hintNodes: readonly number[];
-  /** Every edge leaving the current dot is already drawn. */
-  deadEnd: boolean;
   /** Solved-sweep progress, `0..1`. Zero when not celebrating. */
   celebration: number;
   reducedMotion: boolean;
@@ -324,15 +322,6 @@ export class Renderer {
     const { ctx, colors } = this;
     const { layout, tipX, tipY } = frame;
     const radius = layout.strokeWidth * 0.42;
-
-    if (frame.deadEnd) {
-      const wave = frame.reducedMotion ? 1 : 1 + Math.sin(frame.time * 9) * 0.18;
-      ctx.beginPath();
-      ctx.arc(tipX, tipY, radius * 2.4 * wave, 0, TAU);
-      ctx.strokeStyle = withAlpha(colors.deadEnd, 0.9);
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-    }
 
     ctx.beginPath();
     ctx.arc(tipX, tipY, radius, 0, TAU);

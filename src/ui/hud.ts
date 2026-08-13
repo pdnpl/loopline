@@ -62,7 +62,6 @@ export class Hud {
   private readonly statLevel = el('stat-level');
   private readonly statTime = el('stat-time');
   private readonly statBest = el('stat-best');
-  private readonly progress = el('progress');
   private readonly progressValue = el('progress-value');
   private readonly progressLabel = el('progress-label');
 
@@ -97,7 +96,6 @@ export class Hud {
    *  near zero, so an initial `0` swallowed everything for the first 300 ms. */
   private readonly lastActivation = new Map<string, number>();
   private remaining = 0;
-  private deadEnd = false;
   /** The progress reset is destructive, so it takes two presses. */
   private resetArmed = false;
 
@@ -230,26 +228,9 @@ export class Hud {
     this.renderProgress();
   }
 
-  /**
-   * A dead end takes over the counter slot rather than adding a line of its own,
-   * so nothing on the board shifts at the moment the player most needs to read
-   * it.
-   */
-  setDeadEnd(active: boolean): void {
-    if (active === this.deadEnd) return;
-    this.deadEnd = active;
-    this.renderProgress();
-  }
-
   private renderProgress(): void {
-    if (this.deadEnd) {
-      setText(this.progressValue, '');
-      setText(this.progressLabel, this.t('deadEnd'));
-    } else {
-      setText(this.progressValue, String(this.remaining));
-      setText(this.progressLabel, this.t('linesLeft'));
-    }
-    this.progress.classList.toggle('progress--warn', this.deadEnd);
+    setText(this.progressValue, String(this.remaining));
+    setText(this.progressLabel, this.t('linesLeft'));
   }
 
   announce(key: MessageKey, params?: Readonly<Record<string, string | number>>): void {
@@ -270,9 +251,12 @@ export class Hud {
     // goes away rather than sitting there looking pressable. `visibility` keeps
     // its box, so the board does not resize mid-overlay.
     this.dock.classList.add('dock--hidden');
-    // Focus the action so keyboard and screen-reader users land on it, but do
-    // not scroll — the layout is fixed.
-    this.overlayAction.focus({ preventScroll: true });
+    // Focus something meaningful: the primary action, or the first level chip on
+    // the picker, which has no primary action to focus.
+    const first = this.overlayAction.hidden
+      ? this.overlayLevels.querySelector('button')
+      : this.overlayAction;
+    first?.focus({ preventScroll: true });
   }
 
   hideOverlay(): void {
@@ -338,6 +322,10 @@ export class Hud {
     // destructive action lives, next to the progress it would erase.
     this.overlaySecondary.hidden = kind === 'failed' || kind === 'intro';
     this.overlayLevels.hidden = kind !== 'levels';
+    // The picker needs no confirm button: choosing a level closes it, and a tap
+    // anywhere else closes it too. A "Close" button would only be a third way to
+    // do what the other two already do.
+    this.overlayAction.hidden = kind === 'levels';
     if (kind === 'solved') setText(this.overlaySecondary, this.t('replay'));
     if (kind === 'levels') setText(this.overlaySecondary, this.t('resetProgress'));
 
@@ -345,7 +333,6 @@ export class Hud {
       setText(this.overlayEyebrow, '');
       setText(this.overlayTitle, this.t('levelsTitle'));
       setText(this.overlayBody, this.t('levelsHint'));
-      setText(this.overlayAction, this.t('close'));
       setText(this.overlayHint, this.t('tapAnywhere'));
       this.renderLevels(data);
       return;

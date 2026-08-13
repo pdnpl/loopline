@@ -208,19 +208,10 @@ describe('Hud — overlay', () => {
 });
 
 describe('Hud — stats', () => {
-  it('shows the counter, and hands the slot to the dead-end warning', () => {
+  it('shows how many lines are left', () => {
     hud.setProgress(7);
     expect(el('progress-value').textContent).toBe('7');
     expect(el('progress-label').textContent).toBe('lines left');
-
-    hud.setDeadEnd(true);
-    expect(el('progress-value').textContent).toBe('');
-    expect(el('progress-label').textContent).toBe('Dead end — drag back');
-    expect(el('progress').classList.contains('progress--warn')).toBe(true);
-
-    hud.setDeadEnd(false);
-    expect(el('progress-value').textContent).toBe('7');
-    expect(el('progress').classList.contains('progress--warn')).toBe(false);
   });
 
   it('formats times and shows a dash with no record yet', () => {

@@ -29,7 +29,6 @@ import {
   currentNode,
   edgesRemaining,
   isComplete,
-  isDeadEnd,
   nodeAt,
   startAt,
   tipPosition,
@@ -42,8 +41,6 @@ export interface GameHooks {
   onPhase(phase: Phase): void;
   onProgress(remaining: number, total: number): void;
   onElapsed(ms: number): void;
-  /** Fires only on change: every line out of the current dot is already drawn. */
-  onDeadEnd(active: boolean): void;
 }
 
 export interface GameOptions {
@@ -101,7 +98,6 @@ export class Game {
   private timing = false;
   private celebration = 0;
   private clock = 0;
-  private deadEnd = false;
 
   private rafId = 0;
   private lastFrame = 0;
@@ -245,19 +241,6 @@ export class Game {
     if (this.phase === phase) return;
     this.phase = phase;
     this.hooks.onPhase(phase);
-    this.refreshDeadEnd();
-  }
-
-  /**
-   * Recomputed on every change to the stroke rather than once per frame, so the
-   * warning appears on the same input event that caused it instead of up to a
-   * frame later.
-   */
-  private refreshDeadEnd(): void {
-    const active = this.phase === 'drawing' && isDeadEnd(this.trail, this.puzzle);
-    if (active === this.deadEnd) return;
-    this.deadEnd = active;
-    this.hooks.onDeadEnd(active);
   }
 
   // -- layout --------------------------------------------------------------
@@ -331,7 +314,6 @@ export class Game {
       time: this.clock,
       nodePulse: this.nodePulse,
       hintNodes: this.hintBuffer,
-      deadEnd: this.deadEnd,
       celebration: this.phase === 'solved' && this.celebration < 1 ? this.celebration : 0,
       reducedMotion: this.reducedMotion,
       tipX: this.tip.x,
@@ -574,7 +556,6 @@ export class Game {
     this.trail.nodes.pop();
     if (edge !== undefined) this.trail.used[edge] = 0;
     this.hooks.onProgress(edgesRemaining(this.trail, this.puzzle), this.puzzle.edges.length);
-    this.refreshDeadEnd();
   }
 
   // -- shared reactions ----------------------------------------------------
@@ -614,10 +595,7 @@ export class Game {
       // Completing mid-drag ends the run immediately; there is nothing left to
       // draw, so waiting for the finger to lift would only add latency.
       this.solve();
-      return;
     }
-
-    this.refreshDeadEnd();
   }
 
   private solve(): void {
