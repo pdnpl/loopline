@@ -345,6 +345,78 @@ describe('Game — surviving a hostile browser', () => {
   });
 });
 
+describe('Game — haptics', () => {
+  let buzzes: (number | number[])[];
+
+  beforeEach(() => {
+    buzzes = [];
+    Object.defineProperty(navigator, 'vibrate', {
+      configurable: true,
+      writable: true,
+      value: (pattern: number | number[]) => {
+        buzzes.push(pattern);
+        return true;
+      },
+    });
+  });
+
+  it('ticks with a pulse long enough for a phone to render', () => {
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+
+    expect(buzzes).toHaveLength(1);
+    // Sub-10ms requests are commonly rounded away by the hardware.
+    expect(buzzes[0]).toBeGreaterThanOrEqual(10);
+  });
+
+  it('does not cut a tick short with the next one', () => {
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    // Every vibrate() call cancels whatever is playing, so ticks fired faster
+    // than they last used to cancel each other into silence.
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    for (let i = 1; i < Math.min(4, path.length); i++) {
+      press(harness.surface, 'pointermove', layout.px[path[i]], layout.py[path[i]]);
+    }
+    expect(buzzes).toHaveLength(1);
+  });
+
+  it('lets the important events through regardless', () => {
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+    press(harness.surface, 'pointerup', layout.px[path[1]], layout.py[path[1]]);
+
+    // The tick, then the failure — the second must not be throttled away.
+    expect(buzzes).toHaveLength(2);
+    expect(buzzes[1]).toBeGreaterThanOrEqual(30);
+  });
+
+  it('stays silent where the API does not exist, as on iOS', () => {
+    Object.defineProperty(navigator, 'vibrate', { configurable: true, value: undefined });
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(
+      harness.game.currentPuzzle,
+      harness.game.currentPuzzle.validStarts[0],
+    );
+
+    expect(() => {
+      press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+      press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+    }).not.toThrow();
+    expect(buzzes).toHaveLength(0);
+  });
+});
+
 describe('Game — keyboard play', () => {
   function key(name: string): void {
     harness.surface.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true }));
