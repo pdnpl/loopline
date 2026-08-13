@@ -4,7 +4,7 @@ import './styles.css';
 
 import { Game } from './game/game';
 import type { Phase } from './game/game';
-import { bestFor, load, recordBest, save } from './game/storage';
+import { bestFor, load, recordBest, resetProgress, save } from './game/storage';
 import type { SaveData } from './game/storage';
 import { resolveTheme } from './game/theme';
 import type { ThemeName, ThemePreference } from './game/theme';
@@ -46,15 +46,28 @@ const hud = new Hud({
     goToLevel(game.currentLevel + 1);
   },
   onOverlaySecondary: (kind: OverlayKind) => {
-    // Only the solved screen offers one, and it replays the level just solved
-    // so the best time is something you can actually chase.
-    if (kind !== 'solved') return;
-    game.restart();
-    board.focus({ preventScroll: true });
+    if (kind === 'solved') {
+      // Replays the level just solved, so the best time is chaseable.
+      game.restart();
+      board.focus({ preventScroll: true });
+      return;
+    }
+    if (kind === 'intro') {
+      // The only irreversible action in the game, and the one the words
+      // "od nowa" actually promise. Confirmed twice by the HUD before it lands.
+      resetProgress(state);
+      save(state);
+      hud.hideOverlay();
+      goToLevel(1);
+      hud.announce('resetDone');
+    }
   },
   onRestart: () => {
     game.restart();
-    board.focus({ preventScroll: true });
+    // Focus deliberately stays on the button. Stealing it back to the board made
+    // the board's focus ring blink on every press — which the player read as the
+    // only thing the button did — and meant a second Enter went nowhere.
+    hud.announce('a11yRestarted', { level: game.currentLevel });
   },
   onToggleLang: () => {
     lang = lang === 'pl' ? 'en' : 'pl';

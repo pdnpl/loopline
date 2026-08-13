@@ -74,6 +74,16 @@ export function bestFor(data: SaveData, level: number): number | null {
   return typeof value === 'number' ? value : null;
 }
 
+/**
+ * Wipes progress — level and every best time — while keeping the preferences a
+ * player set deliberately. Starting the game over should not also undo their
+ * choice of language and theme.
+ */
+export function resetProgress(data: SaveData): void {
+  data.level = 1;
+  data.best = {};
+}
+
 /** Records a time when it beats the stored one. Returns true if it was a record. */
 export function recordBest(data: SaveData, level: number, ms: number): boolean {
   const current = bestFor(data, level);

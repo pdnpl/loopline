@@ -40,8 +40,15 @@ function setText(node: HTMLElement, value: string): void {
   if (node.textContent !== value) node.textContent = value;
 }
 
-/** Ignores the second activation of one interaction (pointerdown then click). */
-const ACTIVATION_GUARD_MS = 300;
+/**
+ * Ignores the second activation of one interaction (pointerdown then click).
+ *
+ * Deliberately short and deliberately per-control. A shared window meant one
+ * control could swallow another's press, and — worse — a second press of a
+ * button that looked broken was itself discarded, so the natural way to test a
+ * control was the thing that stopped it working.
+ */
+const ACTIVATION_GUARD_MS = 60;
 
 export class Hud {
   private readonly statLevel = el('stat-level');
@@ -65,6 +72,7 @@ export class Hud {
   private readonly btnTheme = el<HTMLButtonElement>('btn-theme');
   private readonly btnHelp = el<HTMLButtonElement>('btn-help');
   private readonly btnRestart = el<HTMLButtonElement>('btn-restart');
+  private readonly dock = el('dock');
   private readonly live = el('live');
 
   private readonly themeIcons: Record<ThemePreference, HTMLElement> = {
@@ -75,9 +83,14 @@ export class Hud {
 
   private lang: Lang = 'en';
   private overlayKind: OverlayKind | null = null;
-  private lastActivation = 0;
+  /** Last accepted activation per control. `-Infinity` so the first press on a
+   *  freshly loaded page is never inside the window — `performance.now()` starts
+   *  near zero, so an initial `0` swallowed everything for the first 300 ms. */
+  private readonly lastActivation = new Map<string, number>();
   private remaining = 0;
   private deadEnd = false;
+  /** The progress reset is destructive, so it takes two presses. */
+  private resetArmed = false;
 
   constructor(private readonly handlers: HudHandlers) {
     // Pointer-down rather than click: the retry loop should react on touch, not
@@ -102,19 +115,16 @@ export class Hud {
       this.activateSecondary();
     });
 
-    // Always live. A greyed-out control reads as broken far more readily than
-    // it reads as "nothing to do", and restarting an untouched board is
-    // harmless — the game answers the press instead of refusing it.
-    const restart = (): void => {
-      this.guard(() => {
+    // Plain `click`, and no preventDefault. The dock button is not on the fast
+    // retry path — that is the overlay — so there is nothing to gain from
+    // pointerdown, and preventDefault there suppressed the compatibility mouse
+    // events, which took the button's own `:active` press state and focus with
+    // them. The control looked dead because it stopped looking pressed.
+    this.btnRestart.addEventListener('click', () => {
+      this.guard('restart', () => {
         handlers.onRestart();
       });
-    };
-    this.btnRestart.addEventListener('pointerdown', (event) => {
-      event.preventDefault();
-      restart();
     });
-    this.btnRestart.addEventListener('click', restart);
 
     this.btnLang.addEventListener('click', () => {
       handlers.onToggleLang();
@@ -127,17 +137,18 @@ export class Hud {
     });
   }
 
-  private guard(action: () => void): void {
+  private guard(control: string, action: () => void): void {
     const now = performance.now();
-    if (now - this.lastActivation < ACTIVATION_GUARD_MS) return;
-    this.lastActivation = now;
+    const previous = this.lastActivation.get(control) ?? Number.NEGATIVE_INFINITY;
+    if (now - previous < ACTIVATION_GUARD_MS) return;
+    this.lastActivation.set(control, now);
     action();
   }
 
   private activateOverlay(): void {
     const kind = this.overlayKind;
     if (kind === null) return;
-    this.guard(() => {
+    this.guard('overlay', () => {
       this.handlers.onOverlayAction(kind);
     });
   }
@@ -145,7 +156,15 @@ export class Hud {
   private activateSecondary(): void {
     const kind = this.overlayKind;
     if (kind === null) return;
-    this.guard(() => {
+    this.guard('overlay-secondary', () => {
+      // Erasing progress is the one irreversible thing a player can do here, so
+      // it asks once. The first press only changes the label.
+      if (kind === 'intro' && !this.resetArmed) {
+        this.resetArmed = true;
+        setText(this.overlaySecondary, this.t('resetConfirm'));
+        return;
+      }
+      this.resetArmed = false;
       this.handlers.onOverlaySecondary(kind);
     });
   }
@@ -235,8 +254,13 @@ export class Hud {
   showOverlay(kind: OverlayKind, data: OverlayData = {}): void {
     this.overlayKind = kind;
     this.lastOverlayData = data;
+    this.resetArmed = false;
     this.renderOverlay(kind, data);
     this.overlay.hidden = false;
+    // The veil covers the dock and swallows presses aimed at it, so the dock
+    // goes away rather than sitting there looking pressable. `visibility` keeps
+    // its box, so the board does not resize mid-overlay.
+    this.dock.classList.add('dock--hidden');
     // Focus the action so keyboard and screen-reader users land on it, but do
     // not scroll — the layout is fixed.
     this.overlayAction.focus({ preventScroll: true });
@@ -244,7 +268,9 @@ export class Hud {
 
   hideOverlay(): void {
     this.overlayKind = null;
+    this.resetArmed = false;
     this.overlay.hidden = true;
+    this.dock.classList.remove('dock--hidden');
   }
 
   get overlayVisible(): boolean {
@@ -255,8 +281,11 @@ export class Hud {
     this.overlay.classList.toggle('overlay--failed', kind === 'failed');
     this.overlaySteps.hidden = kind !== 'intro';
     this.overlayTime.hidden = kind !== 'solved';
-    this.overlaySecondary.hidden = kind !== 'solved';
+    // The solved screen offers a replay; the intro is where the one destructive
+    // action lives, tucked behind the help button rather than on the board.
+    this.overlaySecondary.hidden = kind === 'failed';
     if (kind === 'solved') setText(this.overlaySecondary, this.t('replay'));
+    if (kind === 'intro') setText(this.overlaySecondary, this.t('resetProgress'));
 
     if (kind === 'intro') {
       setText(this.overlayEyebrow, this.t('tagline'));

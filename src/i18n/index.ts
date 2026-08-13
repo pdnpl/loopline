@@ -33,9 +33,14 @@ const en = {
   next: 'Next level',
   replay: 'Beat this time',
 
-  restart: 'Restart',
+  // Scoped on purpose. "Restart" alone reads as "restart the game", which this
+  // button has never done — see ADR-0018.
+  restart: 'Restart level',
   retry: 'Try again',
   tapAnywhere: 'or tap anywhere',
+  resetProgress: 'Start the game over',
+  resetConfirm: 'Erase progress? Press again',
+  resetDone: 'Progress erased',
 
   language: 'Language',
   theme: 'Theme',
@@ -51,6 +56,7 @@ const en = {
   a11ySolved: 'Solved in {time}.',
   a11yFailed: 'Run ended. Try again.',
   a11yDeadEnd: 'Dead end. No line leaves this dot. Go back or start over.',
+  a11yRestarted: 'Board cleared. Level {level}.',
 } as const;
 
 type Dictionary = Record<keyof typeof en, string>;
@@ -79,9 +85,14 @@ const pl: Dictionary = {
   next: 'Następny poziom',
   replay: 'Popraw ten czas',
 
-  restart: 'Od nowa',
+  // "Od nowa" was the whole bug: in Polish it promises restarting the *game*.
+  // This button clears the board of the level you are on, and now says so.
+  restart: 'Powtórz poziom',
   retry: 'Jeszcze raz',
   tapAnywhere: 'albo dotknij gdziekolwiek',
+  resetProgress: 'Zacznij grę od nowa',
+  resetConfirm: 'Skasować postęp? Naciśnij ponownie',
+  resetDone: 'Postęp skasowany',
 
   language: 'Język',
   theme: 'Motyw',
@@ -96,6 +107,7 @@ const pl: Dictionary = {
   a11yStart: 'Rozpoczęto pociągnięcie.',
   a11ySolved: 'Rozwiązane w {time}.',
   a11yFailed: 'Próba zakończona. Spróbuj ponownie.',
+  a11yRestarted: 'Plansza wyczyszczona. Poziom {level}.',
   a11yDeadEnd:
     'Ślepy zaułek. Z tej kropki nie wychodzi żadna linia. Cofnij się albo zacznij od nowa.',
 };
