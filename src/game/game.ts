@@ -140,6 +140,14 @@ export class Game {
     });
     this.resizeObserver.observe(this.surface);
 
+    // A hidden page runs no rendering steps, and ResizeObserver callbacks are
+    // delivered as part of those steps. A board first laid out while the tab was
+    // in the background therefore keeps that (usually zero) size forever — the
+    // observer never fires to correct it. Recompute when the page comes back,
+    // and on a back/forward-cache restore.
+    document.addEventListener('visibilitychange', this.handleVisible);
+    globalThis.addEventListener('pageshow', this.handleVisible);
+
     this.attachPointer();
     this.attachKeyboard();
   }
@@ -163,7 +171,13 @@ export class Game {
     if (this.rafId !== 0) cancelAnimationFrame(this.rafId);
     this.rafId = 0;
     this.resizeObserver.disconnect();
+    document.removeEventListener('visibilitychange', this.handleVisible);
+    globalThis.removeEventListener('pageshow', this.handleVisible);
   }
+
+  private readonly handleVisible = (): void => {
+    this.handleResize();
+  };
 
   setTheme(theme: ThemeName): void {
     this.renderer.setTheme(theme);
@@ -352,13 +366,24 @@ export class Game {
     if (node < 0) return;
 
     this.pointerId = event.pointerId;
-    this.surface.setPointerCapture(event.pointerId);
     this.keyboardActive = false;
 
     startAt(this.trail, node);
     this.nodePulse[node] = 1;
     this.setPhase('drawing');
     this.hooks.onProgress(this.puzzle.edges.length, this.puzzle.edges.length);
+
+    // Capture is an optimisation — it keeps the stroke alive when the finger
+    // strays off the board. Browsers throw here if the pointer is no longer
+    // active by the time the handler runs, and this used to run *before* the
+    // run was set up, so a throw left `pointerId` claimed and every later touch
+    // ignored: the game looked permanently dead. Losing capture must never lose
+    // the run.
+    try {
+      this.surface.setPointerCapture(event.pointerId);
+    } catch {
+      /* play on without capture */
+    }
   };
 
   private readonly onPointerMove = (event: PointerEvent): void => {
@@ -366,8 +391,17 @@ export class Game {
     event.preventDefault();
 
     clearEvents(this.events);
-    const samples =
-      typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : [event];
+
+    // Coalesced events are the samples the browser buffered between frames —
+    // replaying them is what stops a fast swipe cutting corners. But the list
+    // comes back empty for untrusted events and in browsers that restrict
+    // high-frequency input, and an empty list would silently drop the move
+    // entirely: the stroke would simply never follow the finger. Fall back to
+    // the event itself, which is the sample it stands for.
+    const coalesced =
+      typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : [];
+    const samples = coalesced.length > 0 ? coalesced : [event];
+
     const left = this.surfaceRect.left;
     const top = this.surfaceRect.top;
 
@@ -389,8 +423,12 @@ export class Game {
   private readonly onPointerUp = (event: PointerEvent): void => {
     if (event.pointerId !== this.pointerId) return;
     this.pointerId = -1;
-    if (this.surface.hasPointerCapture(event.pointerId)) {
-      this.surface.releasePointerCapture(event.pointerId);
+    try {
+      if (this.surface.hasPointerCapture(event.pointerId)) {
+        this.surface.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      /* the pointer is already gone, which is what we wanted anyway */
     }
     if (this.phase !== 'drawing') return;
 

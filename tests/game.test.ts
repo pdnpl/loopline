@@ -11,8 +11,9 @@ import {
   stubCanvas,
   stubMatchMedia,
   stubResizeObserver,
+  withEmptyCoalesced,
 } from './helpers/browser-stubs';
-import type { FramePump } from './helpers/browser-stubs';
+import type { FramePump, PointerTarget, PointerTargetOptions } from './helpers/browser-stubs';
 
 const WIDTH = 420;
 const HEIGHT = 680;
@@ -51,11 +52,15 @@ interface Harness {
   phases: Phase[];
   progress: number[];
   deadEnds: boolean[];
+  target: PointerTarget;
 }
 
 let harness: Harness;
 
-function setup(): Harness {
+function setup(
+  options: PointerTargetOptions = {},
+  box: { width: number; height: number } = { width: WIDTH, height: HEIGHT },
+): Harness {
   stubResizeObserver();
   stubMatchMedia(false);
   const pump = stubAnimationFrame();
@@ -64,7 +69,7 @@ function setup(): Harness {
   const canvas = document.createElement('canvas');
   surface.append(canvas);
   document.body.append(surface);
-  preparePointerTarget(surface, WIDTH, HEIGHT);
+  const target = preparePointerTarget(surface, box.width, box.height, options);
 
   const phases: Phase[] = [];
   const progress: number[] = [];
@@ -81,11 +86,22 @@ function setup(): Harness {
   });
   game.start();
 
-  return { game, surface, pump, phases, progress, deadEnds };
+  return { game, surface, pump, phases, progress, deadEnds, target };
 }
 
 function press(target: HTMLElement, type: string, x: number, y: number, pointerId = 1): void {
   target.dispatchEvent(pointerEvent(type, x, y, pointerId));
+}
+
+/** Tears the current harness down and builds a fresh one under new conditions. */
+function remount(
+  options: PointerTargetOptions = {},
+  box: { width: number; height: number } = { width: WIDTH, height: HEIGHT },
+): void {
+  harness.game.destroy();
+  harness.pump.restore();
+  document.body.replaceChildren();
+  harness = setup(options, box);
 }
 
 /** Plays a level to completion by dragging through a real Eulerian solution. */
@@ -262,6 +278,73 @@ describe('Game — pointer play', () => {
     press(harness.surface, 'pointerdown', layout.px[start], layout.py[start]);
     harness.pump.advance(FRAME_MS * 30);
     expect(harness.game.elapsedMs).toBe(0);
+  });
+});
+
+describe('Game — surviving a hostile browser', () => {
+  /**
+   * Each of these is an optional platform API failing in a way that used to
+   * take the whole game down silently — no error, no visible cause, just a
+   * board that stopped responding.
+   */
+
+  it('keeps playing when pointer capture is refused', () => {
+    remount({ captureThrows: true });
+
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    expect(harness.game.currentPhase).toBe('drawing');
+
+    press(harness.surface, 'pointermove', layout.px[path[1]], layout.py[path[1]]);
+    expect(harness.progress.at(-1)).toBe(puzzle.edges.length - 1);
+  });
+
+  it('accepts a new touch after capture was refused, instead of going deaf', () => {
+    remount({ captureThrows: true });
+
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const start = puzzle.validStarts[0];
+
+    // The original bug: `pointerId` was claimed before the throwing call, so it
+    // was never released and every later touch was ignored as "already drawing".
+    press(harness.surface, 'pointerdown', layout.px[start], layout.py[start], 1);
+    press(harness.surface, 'pointerup', layout.px[start], layout.py[start], 1);
+    expect(harness.game.currentPhase).toBe('idle');
+
+    press(harness.surface, 'pointerdown', layout.px[start], layout.py[start], 2);
+    expect(harness.game.currentPhase).toBe('drawing');
+  });
+
+  it('still moves the stroke when no coalesced samples are reported', () => {
+    const puzzle = harness.game.currentPuzzle;
+    const layout = harness.game.currentLayout;
+    const path = solutionPath(puzzle, puzzle.validStarts[0]);
+
+    press(harness.surface, 'pointerdown', layout.px[path[0]], layout.py[path[0]]);
+    harness.surface.dispatchEvent(
+      withEmptyCoalesced(pointerEvent('pointermove', layout.px[path[1]], layout.py[path[1]])),
+    );
+
+    // An empty list used to drop the move entirely, so the stroke never
+    // followed the finger and the board looked frozen.
+    expect(harness.progress.at(-1)).toBe(puzzle.edges.length - 1);
+  });
+
+  it('lays the board out again when the page becomes visible', () => {
+    // A page that is hidden at load runs no rendering steps, so ResizeObserver
+    // never fires and the board keeps its zero size forever.
+    remount({}, { width: 0, height: 0 });
+    expect(harness.game.currentLayout.width).toBeLessThanOrEqual(1);
+
+    harness.target.resize(WIDTH, HEIGHT);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(harness.game.currentLayout.width).toBe(WIDTH);
+    expect(harness.game.currentLayout.height).toBe(HEIGHT);
   });
 });
 
