@@ -239,7 +239,7 @@ export class Hud {
    */
   private renderProgress(): void {
     const fraction = this.drawn / this.total;
-    this.progressFill.style.transform = `scaleX(${fraction.toFixed(4)})`;
+    this.progressFill.style.width = `${(fraction * 100).toFixed(2)}%`;
     setText(this.progressValue, `${this.drawn}/${this.total}`);
 
     // The words live only where a screen reader needs them.
