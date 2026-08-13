@@ -28,3 +28,4 @@ the old one `Superseded by ADR-XXXX`.
 | [0019](0019-the-dock-holds-navigation.md)               | The dock holds navigation, not a second retry button   | Accepted                                 |
 | [0020](0020-trim-the-interface.md)                      | Trim the interface to what it can honour               | Accepted                                 |
 | [0021](0021-progress-is-a-shape.md)                     | Progress is a shape, not a sentence                    | Accepted                                 |
+| [0022](0022-haptics-and-what-silences-them.md)          | Haptics, and the three things that silence them        | Accepted                                 |

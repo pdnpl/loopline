@@ -72,11 +72,25 @@ const DIRECTION_KEYS: Readonly<Record<string, readonly [number, number]>> = {
   c: [1, 1],
 };
 
-function vibrate(pattern: number | number[]): void {
-  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-    navigator.vibrate(pattern);
-  }
-}
+/**
+ * Haptics, and the three things that silence them.
+ *
+ * 1. **iOS has never implemented the Vibration API.** `navigator.vibrate` is
+ *    undefined in Safari on iPhone, so no amount of code produces a buzz there.
+ *    Nothing to fix; worth stating so nobody goes looking.
+ * 2. **Android honours the system "vibrate on touch" setting.** With it off the
+ *    call succeeds, returns true, and does nothing.
+ * 3. **A vibration request cancels whatever is playing.** This one was ours: the
+ *    per-line tick was 6 ms, below what a phone's motor can spin up for, and
+ *    drawing at any speed re-issued it before it could play — a stream of
+ *    cancellations that added up to silence. Durations are now long enough to
+ *    render, and a tick will not cut short a tick already running.
+ */
+const HAPTIC_TICK_MS = 15;
+const HAPTIC_RESTART_MS = 22;
+const HAPTIC_FAIL_MS = 40;
+/** Buzz, pause, longer buzz — a small flourish, not a rumble. */
+const HAPTIC_SOLVE_MS = [22, 45, 34];
 
 export class Game {
   private readonly renderer: Renderer;
@@ -98,6 +112,8 @@ export class Game {
   private timing = false;
   private celebration = 0;
   private clock = 0;
+
+  private lastHapticAt = Number.NEGATIVE_INFINITY;
 
   private rafId = 0;
   private lastFrame = 0;
@@ -176,6 +192,18 @@ export class Game {
     this.handleResize();
   };
 
+  /**
+   * @param minGapMs refuse if a pulse issued this recently could still be
+   *   playing. Zero for the events that should always win.
+   */
+  private haptic(pattern: number | readonly number[], minGapMs: number): void {
+    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+    const now = performance.now();
+    if (now - this.lastHapticAt < minGapMs) return;
+    this.lastHapticAt = now;
+    navigator.vibrate(typeof pattern === 'number' ? pattern : [...pattern]);
+  }
+
   setTheme(theme: ThemeName): void {
     this.renderer.setTheme(theme);
   }
@@ -221,7 +249,7 @@ export class Game {
     // state, and a control that responds with nothing reads as broken — so the
     // dots pulse once to confirm the board was reset either way.
     this.nodePulse.fill(1);
-    vibrate(8);
+    this.haptic(HAPTIC_RESTART_MS, 0);
   }
 
   private resetRun(): void {
@@ -584,7 +612,7 @@ export class Game {
           );
         }
       }
-      vibrate(6);
+      this.haptic(HAPTIC_TICK_MS, HAPTIC_TICK_MS + 8);
     }
 
     if (this.events.committed.length > 0 || this.events.undone.length > 0) {
@@ -618,13 +646,13 @@ export class Game {
         );
       }
     }
-    vibrate([14, 40, 22]);
+    this.haptic(HAPTIC_SOLVE_MS, 0);
   }
 
   private fail(): void {
     this.failures++;
     this.timing = false;
     this.setPhase('failed');
-    vibrate(26);
+    this.haptic(HAPTIC_FAIL_MS, 0);
   }
 }
