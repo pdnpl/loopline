@@ -30,3 +30,4 @@ the old one `Superseded by ADR-XXXX`.
 | [0021](0021-progress-is-a-shape.md)                        | Progress is a shape, not a sentence                    | Accepted                                 |
 | [0022](0022-haptics-and-what-silences-them.md)             | Haptics, and the three things that silence them        | Accepted                                 |
 | [0023](0023-android-as-a-capacitor-shell-built-locally.md) | Android as a Capacitor shell, built locally            | Accepted                                 |
+| [0024](0024-contrast-is-not-a-filter.md)                   | Contrast is not a filter                               | Accepted                                 |
