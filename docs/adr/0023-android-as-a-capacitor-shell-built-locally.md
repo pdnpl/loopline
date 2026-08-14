@@ -179,3 +179,54 @@ at it.
   installs is a slow check that proves little.
 - **Do the native refinements in the same pass.** Faster in wall-clock terms and
   worse in every other way; see decision 2.
+
+---
+
+## Addendum, same day: the mark becomes an L, and two lessons about small sizes
+
+@ravwtar rejected the first icon and asked for a letter L, with a dot and its
+flare in the bottom right. Decision 7 stands; the artwork inside it changed.
+
+**The L is not just an initial.** An L is drawn in one stroke with a turn in the
+middle, which is the game. Three nodes, two edges: the top and the bottom-right
+have degree 1, the corner has degree 2, so exactly two vertices are odd and an
+Eulerian trail exists between them. **It is the smallest legal Loopline board**,
+and the flare sits on one of the two dots a run could legitimately end on.
+
+The launch screen takes the same geometry, with every colour behind a resource
+so `values/` and `values-night/` supply the game's two palettes without a second
+copy of the paths — and the light variant is the real light palette, where the
+game composites no additive glow at all, not the dark one lightened.
+
+### Two things that were wrong, and only showed up at 48 px
+
+**1. Node size is not what makes a node legible; contrast is.** The first
+attempt used arms of 28 and 38 units with nodes 20–22 across, on the reasoning
+that "the dot must be clearly visible". The nodes ate the arms, the trail
+survived as two stubs between them, and the letter did not read at all — three
+blobs. The nodes were also near-white, brighter than the line they sat on,
+inverting the board's own hierarchy.
+
+Fixed by going the other way: arms of 42 and 30 against nodes 13 across, so the
+line is about three times the node, and the two passed nodes are palette **grey**
+against a bright trail. Only the head is white, and only the head glows. That is
+what the board actually looks like.
+
+The separator rings the first attempt used to "help the dots stand out" were
+part of the problem — they cut the stroke, so the line looked broken.
+
+**2. A wide stroke is not a glow.** The halo was one 20-unit stroke at a single
+alpha, which has no falloff, so it rendered as a hard navy outline around the
+letter. The canvas gets its bloom from radial-gradient sprites
+([ADR-0003](0003-canvas-2d-rendering.md)); a vector drawable has no equivalent,
+so the halo is now three concentric passes at 24/17/13 units and falling alpha,
+which approximates the ramp.
+
+**The themed-icon layer is a separate drawable.** A `monochrome` layer is
+flattened to one tint, so pointing it at the foreground would lose the gradient
+and turn the flare into a solid disc twice the width of the stroke. It is the
+silhouette only.
+
+Both mistakes were invisible in the source and in a large preview. They were
+obvious the moment the icon was on a launcher at the size a launcher uses, which
+is the only size that counts.

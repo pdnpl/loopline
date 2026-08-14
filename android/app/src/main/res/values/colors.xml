@@ -4,10 +4,21 @@
   the launch screen follows the system the same way the game's "auto" theme
   does — a light phone never gets a black flash before a light board.
 
-  These are the game's own palette values from src/styles.css, per mode: the
-  "bg-0" background and the "accent" stroke. If those change, change these.
+  Values are the LIGHT palette from src/game/theme.ts, not the dark one washed
+  out. On a light board the game composites no additive glow, so the head is
+  near-black and the flare is translucent indigo ink.
 -->
 <resources>
     <color name="splash_background">#F4F5FA</color>
-    <color name="splash_mark">#4F46E5</color>
+    <color name="splash_stroke_start">#0D9488</color>
+    <color name="splash_stroke_mid">#4F46E5</color>
+    <color name="splash_stroke_end">#C026D3</color>
+    <color name="splash_stroke_halo_far">#0E4F46E5</color>
+    <color name="splash_stroke_halo_mid">#164F46E5</color>
+    <color name="splash_stroke_halo_near">#1F4F46E5</color>
+    <color name="splash_glow_strong">#596366F1</color>
+    <color name="splash_glow_soft">#206366F1</color>
+    <color name="splash_glow_none">#006366F1</color>
+    <color name="splash_node">#0F172A</color>
+    <color name="splash_head">#020617</color>
 </resources>

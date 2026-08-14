@@ -1,22 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The Loopline mark, as the adaptive icon's foreground layer.
+  The Loopline icon: an L drawn as one stroke, with the head still lit at the
+  end of it.
 
-  Same path as the wordmark in index.html, mapped from its 24x24 viewBox into
-  the 108x108 adaptive canvas at 3.3x. The scale is chosen so the furthest
-  corner sits ~30 units from centre, inside the 33-unit radius a circular mask
-  keeps — a larger mark would have its ends clipped on a round launcher.
+  The shape is the smallest legal Loopline board. Three dots, two lines: the
+  top and the bottom-right have degree 1, the corner has degree 2, so exactly
+  two vertices are odd and an Eulerian trail exists between them. The glow sits
+  on one of those two endpoints, which is where a finger would actually finish.
+
+  Geometry, in the 108x108 adaptive canvas. A circular mask clips at radius 36
+  from centre; the 66-unit keyline often quoted is a styling guideline, not the
+  clip.
+
+  - Arms are 42 and 30 long against nodes 13-16 across, so the line is roughly
+    three times the node. An earlier revision had arms of 38 and 28 with nodes
+    of 20-22: the nodes ate the arms, the line survived as two stubs, and the
+    letter did not read at all. Node size is not what makes a node legible.
+  - Contrast is. The nodes are palette grey against a bright trail, which is
+    how they look on the board itself — darker circles sitting on a lit line.
+    Only the head is white, and only the head glows.
+  - The three nodes sit 25.8 from centre. A node (radius 6.5) reaches 32.3 and
+    the head (radius 8) reaches 33.8, both inside the clip. Only the outer,
+    nearly transparent tail of the flare is cut.
+
+  Colours are the canvas palette from src/game/theme.ts, dark variant, fixed:
+  the icon does not follow night mode.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!--
+      Halo under the trail, in three passes.
+
+      One wide stroke at a single alpha does not read as glow — it reads as a
+      navy outline, because a stroke has no falloff and the eye sees the hard
+      edge where it ends. The canvas gets its bloom from radial sprites; a
+      vector cannot, so three concentric passes approximate the ramp instead.
+    -->
     <path
-        android:pathData="M30.9,73.8 L30.9,34.2 L54,54 L77.1,34.2 L77.1,73.8"
-        android:fillColor="#00000000"
-        android:strokeColor="#818CF8"
-        android:strokeWidth="7.3"
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="#12818CF8"
+        android:strokeWidth="24"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="#1A818CF8"
+        android:strokeWidth="17"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="#24818CF8"
+        android:strokeWidth="13"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- The trail, running start colour to end colour along its own direction. -->
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="39"
+                android:startY="33"
+                android:endX="69"
+                android:endY="75">
+                <item android:offset="0" android:color="#FF5EEAD4" />
+                <item android:offset="0.52" android:color="#FF818CF8" />
+                <item android:offset="1" android:color="#FFE879F9" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!--
+      The flare on the lit node: palette nodeVisitedGlow, additive on dark.
+      Alpha falls away quickly so the part the mask cuts is already invisible.
+    -->
+    <path android:pathData="M52,75 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="69"
+                android:centerY="75"
+                android:gradientRadius="17">
+                <item android:offset="0" android:color="#F2A5B4FC" />
+                <item android:offset="0.35" android:color="#40A5B4FC" />
+                <item android:offset="1" android:color="#00A5B4FC" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The two nodes already passed. Grey, so the trail stays the bright thing. -->
+    <path
+        android:pathData="M32.5,33 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="#FF94A3B8" />
+    <path
+        android:pathData="M32.5,75 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="#FF94A3B8" />
+
+    <!-- The lit head. Palette `head`, pure white on a dark board. -->
+    <path
+        android:pathData="M61,75 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z"
+        android:fillColor="#FFFFFFFF" />
 </vector>

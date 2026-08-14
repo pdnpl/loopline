@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Splash colours, dark mode. See values/colors.xml. -->
+<!-- Splash colours, dark mode. The DARK palette from src/game/theme.ts. See values/colors.xml. -->
 <resources>
     <color name="splash_background">#05060B</color>
-    <color name="splash_mark">#818CF8</color>
+    <color name="splash_stroke_start">#5EEAD4</color>
+    <color name="splash_stroke_mid">#818CF8</color>
+    <color name="splash_stroke_end">#E879F9</color>
+    <color name="splash_stroke_halo_far">#12818CF8</color>
+    <color name="splash_stroke_halo_mid">#1A818CF8</color>
+    <color name="splash_stroke_halo_near">#24818CF8</color>
+    <color name="splash_glow_strong">#F2A5B4FC</color>
+    <color name="splash_glow_soft">#57A5B4FC</color>
+    <color name="splash_glow_none">#00A5B4FC</color>
+    <color name="splash_node">#E2E8F0</color>
+    <color name="splash_head">#FFFFFF</color>
 </resources>
