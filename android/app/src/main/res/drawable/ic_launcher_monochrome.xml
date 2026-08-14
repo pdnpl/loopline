@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The themed-icon layer, which the system tints a single colour.
+
+  Deliberately not the foreground drawable. A monochrome layer is flattened to
+  one tint, so the gradient would vanish and the radial flare would come out as
+  a solid disc twice the size of the stroke — a blot, not a mark. This is the
+  silhouette only: the trail and its three nodes, with the head still the
+  largest so the composition keeps its weight in the bottom right.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FF000000">
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M32.5,33 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M32.5,75 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M61,75 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z"
+        android:fillColor="#FF000000" />
+</vector>

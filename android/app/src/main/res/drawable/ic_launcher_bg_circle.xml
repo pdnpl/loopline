@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Circular board, for the legacy round launcher icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M4,54 A50,50 0 1 0 104,54 A50,50 0 1 0 4,54 Z"
+        android:fillColor="@color/ic_launcher_background" />
+</vector>

@@ -1,18 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The mark again, this time tinted per night mode for the launch screen.
-  Geometry identical to ic_launcher_foreground; only the colour source differs.
+  The launch-screen mark. Geometry identical to ic_launcher_foreground; every
+  colour comes from a resource so values/ and values-night/ can supply the
+  game's two palettes without a second copy of the paths.
+
+  The light palette is not the dark one lightened. On a light board the game
+  does not composite glow additively at all (see `additiveGlow` in
+  src/game/theme.ts) — the head goes near-black and the flare becomes
+  translucent ink. These colours follow that.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Three passes rather than one: see ic_launcher_foreground.xml. -->
     <path
-        android:pathData="M30.9,73.8 L30.9,34.2 L54,54 L77.1,34.2 L77.1,73.8"
-        android:fillColor="#00000000"
-        android:strokeColor="@color/splash_mark"
-        android:strokeWidth="7.3"
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="@color/splash_stroke_halo_far"
+        android:strokeWidth="24"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="@color/splash_stroke_halo_mid"
+        android:strokeWidth="17"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeColor="@color/splash_stroke_halo_near"
+        android:strokeWidth="13"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:pathData="M39,33 L39,75 L69,75"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="39"
+                android:startY="33"
+                android:endX="69"
+                android:endY="75">
+                <item android:offset="0" android:color="@color/splash_stroke_start" />
+                <item android:offset="0.52" android:color="@color/splash_stroke_mid" />
+                <item android:offset="1" android:color="@color/splash_stroke_end" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path android:pathData="M52,75 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="69"
+                android:centerY="75"
+                android:gradientRadius="17">
+                <item android:offset="0" android:color="@color/splash_glow_strong" />
+                <item android:offset="0.35" android:color="@color/splash_glow_soft" />
+                <item android:offset="1" android:color="@color/splash_glow_none" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:pathData="M32.5,33 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="@color/splash_node" />
+    <path
+        android:pathData="M32.5,75 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0 Z"
+        android:fillColor="@color/splash_node" />
+
+    <path
+        android:pathData="M61,75 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z"
+        android:fillColor="@color/splash_head" />
 </vector>

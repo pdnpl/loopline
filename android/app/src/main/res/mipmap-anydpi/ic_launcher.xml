@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   The legacy launcher icon, for API 24-25, which predate adaptive icons.
-  API 26+ picks mipmap-anydpi-v26 instead — a version qualifier is more
-  specific, so the adaptive form wins wherever it is understood.
+  API 26+ picks mipmap-anydpi-v26 instead: a version qualifier is more specific,
+  so the adaptive form wins wherever it is understood.
 
-  Background and mark are baked in here because a legacy icon is one flat
-  drawable; the launcher does no masking, so the shape is ours to draw.
+  A layer-list rather than a fourth copy of the geometry — the foreground is
+  already inset for the adaptive canvas, so it drops straight onto a board of
+  the same size.
 -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:pathData="M24,0 L84,0 A24,24 0 0 1 108,24 L108,84 A24,24 0 0 1 84,108 L24,108 A24,24 0 0 1 0,84 L0,24 A24,24 0 0 1 24,0 Z"
-        android:fillColor="@color/ic_launcher_background" />
-    <path
-        android:pathData="M30.9,73.8 L30.9,34.2 L54,54 L77.1,34.2 L77.1,73.8"
-        android:fillColor="#00000000"
-        android:strokeColor="#818CF8"
-        android:strokeWidth="7.3"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-</vector>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_launcher_bg_square" />
+    <item android:drawable="@drawable/ic_launcher_foreground" />
+</layer-list>
