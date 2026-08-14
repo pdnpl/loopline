@@ -36,21 +36,48 @@
     <div class="app">
       <header class="hud">
         <div class="hud__brand">
-          <!-- The same L as the app icon and the favicon, reduced to a
-               single-colour glyph: this one inherits `currentColor` so it
-               follows the accent through a theme change. The trail's three
-               stops and the flare cannot survive that, so only the shape and
-               the endpoint dot carry over. -->
-          <svg class="hud__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <!-- The app icon itself, at 26px: identical geometry and colours to
+               public/favicon.svg and the Android launcher icon, so the three
+               are one mark rather than three drawings of one idea.
+
+               Fixed colours, in both themes. That is the same call ADR-0023
+               made for the launcher icon — a mark that restyles itself under
+               the user is a novelty — and it is why the tile stays dark on a
+               light board: the trail's three stops need a dark ground to read
+               as the lit line they are. -->
+          <svg class="hud__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient
+                id="mark-trail"
+                x1="22"
+                y1="17"
+                x2="42"
+                y2="47"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#5eead4" />
+                <stop offset="0.52" stop-color="#818cf8" />
+                <stop offset="1" stop-color="#e879f9" />
+              </linearGradient>
+              <radialGradient id="mark-flare" cx="42" cy="47" r="11" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#a5b4fc" stop-opacity="0.95" />
+                <stop offset="0.35" stop-color="#a5b4fc" stop-opacity="0.25" />
+                <stop offset="1" stop-color="#a5b4fc" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+            <rect width="64" height="64" rx="14" fill="#05060b" />
             <path
-              d="M8 6 L8 18 L16 18"
+              d="M22 17 L22 47 L42 47"
               fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
+              stroke="url(#mark-trail)"
+              stroke-width="6"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
-            <circle cx="16" cy="18" r="1.9" fill="currentColor" />
+            <circle cx="42" cy="47" r="11" fill="url(#mark-flare)" />
+            <circle cx="22" cy="17" r="4" fill="#94a3b8" />
+            <circle cx="22" cy="47" r="4" fill="#94a3b8" />
+            <circle cx="42" cy="47" r="5" fill="#ffffff" />
           </svg>
           <span class="hud__name" data-text="brand">Loopline</span>
         </div>

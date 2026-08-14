@@ -230,3 +230,27 @@ silhouette only.
 Both mistakes were invisible in the source and in a large preview. They were
 obvious the moment the icon was on a launcher at the size a launcher uses, which
 is the only size that counts.
+
+### One mark, in three places
+
+Changing the launcher icon and nothing else left the web wearing the old
+wordmark, which @ravwtar caught: the favicon, the PWA icon and the mark beside
+the name in the header were all still an M.
+
+The same drawing now serves all three — `public/favicon.svg`, the inline SVG in
+`index.html`, and the Android drawable. Two adaptations, each for a reason:
+
+- **The favicon drops the stroke halo.** At a 16 px tab favicon a halo is mud.
+  It also keeps content within radius 23 of centre, because the manifest
+  declares that file `maskable` as well as `any`, and a maskable icon may be
+  cropped to the central 80% — radius 25.6 in a 64 viewBox.
+- **The header mark is a 26 px tile**, dropping to 22 px below 440 px where the
+  brand is the tile alone and the header has four spare pixels it cannot afford
+  ([ADR-0020](0020-trim-the-interface.md)).
+
+**The header tile keeps fixed colours in both themes**, like the launcher icon.
+An earlier attempt made it a single-colour glyph following `currentColor`, which
+theme-switched cleanly and threw away the trail's three stops and the flare —
+the parts that make it the mark rather than a letter. A dark tile on a light
+board is the right trade: the gradient needs dark ground to read as the lit line
+it is.
