@@ -36,15 +36,21 @@
     <div class="app">
       <header class="hud">
         <div class="hud__brand">
+          <!-- The same L as the app icon and the favicon, reduced to a
+               single-colour glyph: this one inherits `currentColor` so it
+               follows the accent through a theme change. The trail's three
+               stops and the flare cannot survive that, so only the shape and
+               the endpoint dot carry over. -->
           <svg class="hud__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path
-              d="M5 18 L5 6 L12 12 L19 6 L19 18"
+              d="M8 6 L8 18 L16 18"
               fill="none"
               stroke="currentColor"
               stroke-width="2.2"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
+            <circle cx="16" cy="18" r="1.9" fill="currentColor" />
           </svg>
           <span class="hud__name" data-text="brand">Loopline</span>
         </div>
