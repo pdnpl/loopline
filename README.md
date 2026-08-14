@@ -7,8 +7,9 @@ every line exactly once, and do not lift off. It is Euler's bridges of
 Königsberg, sized for a coffee break.
 
 - **No accounts, no server, no leaderboard.** Progress lives in your browser.
-- **~15.5 kB gzipped**, zero runtime dependencies, no web fonts, no network
+- **~15.5 kB gzipped**, nothing imported at runtime, no web fonts, no network
   requests after load.
+- **Runs offline**, in the browser and as an Android app.
 - **Infinite levels**, generated so that every one of them is provably solvable.
 - **Polish and English**, dark and light, pointer and keyboard.
 
@@ -50,6 +51,42 @@ Then open <http://localhost:5173>.
 | `npm run cf:dev`    | Build, then serve through Wrangler locally |
 | `npm run deploy`    | Build, then `wrangler deploy`              |
 
+## Android
+
+The Android app is the web build inside a [Capacitor](https://capacitorjs.com)
+shell — the same `dist/`, the same canvas, the same gestures, packaged into the
+APK so the game works with the radio off. See
+[ADR-0023](docs/adr/0023-android-as-a-capacitor-shell-built-locally.md).
+
+**Nothing in `src/` is Android-specific.** The native project is a container.
+
+```bash
+npm run android:apk
+```
+
+The APK lands in `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+| Script                    | What it does                                |
+| ------------------------- | ------------------------------------------- |
+| `npm run android:sync`    | Build the web app, copy it into `android/`  |
+| `npm run android:apk`     | The above, then a debug APK via Gradle      |
+| `npm run android:install` | Install the built APK on an attached device |
+| `npm run android:open`    | Open the project in Android Studio          |
+
+**Requirements**, once, on the build machine:
+
+| Need           | Version used here                                                |
+| -------------- | ---------------------------------------------------------------- |
+| JDK            | 21                                                               |
+| Android SDK    | platform 36, build-tools 36.0.0, platform-tools                  |
+| `ANDROID_HOME` | pointing at the SDK (or `sdk.dir` in `android/local.properties`) |
+
+Android Studio is optional — the command-line tools are enough. Gradle
+downloads itself on first build.
+
+**Builds are local by design.** No GitHub workflow touches Android or iOS;
+CI verifies and deploys the web app and nothing else.
+
 ## How it is put together
 
 ```
@@ -71,6 +108,8 @@ src/
   i18n/           thirty-odd strings in two languages
 tests/            342 tests, including full pointer and keyboard playthroughs
 docs/adr/         why any of this is the way it is
+android/          generated Capacitor shell — a WebView holding dist/
+scripts/          build helpers that have to work on more than one OS
 ```
 
 The split that matters: **`core/` knows nothing about rendering**, which is why
@@ -124,7 +163,7 @@ the merge result. See [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 ## Decisions
 
-Twenty-two architecture decision records live in [`docs/adr/`](docs/adr/README.md).
+Twenty-three architecture decision records live in [`docs/adr/`](docs/adr/README.md).
 Start with [ADR-0006](docs/adr/0006-generate-puzzles-by-eulerian-walk.md) (why a
 level can never be unsolvable) and
 [ADR-0013](docs/adr/0013-stroke-model-and-fast-retry.md) (why the stroke feels
