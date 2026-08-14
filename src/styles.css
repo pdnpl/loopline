@@ -180,9 +180,16 @@ body::after {
 }
 
 .hud__mark {
-  width: 22px;
-  height: 22px;
+  /* A tile, not a glyph, so it needs room for the trail and its three nodes.
+     22px was enough for a bare stroke and is not enough for this. */
+  width: 26px;
+  height: 26px;
   display: block;
+  border-radius: 7px;
+  /* The tile is darker than any board it sits on, so on the light theme it
+     needs no help; on the dark one this hairline keeps it from dissolving
+     into the header. */
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .hud__name {
@@ -708,6 +715,15 @@ body::after {
 
   .hud__name {
     display: none;
+  }
+
+  /* Back to the old footprint. Between 360 and 439px the brand is the tile
+     alone, and the header measured 339px in 339px before this grew — four
+     spare pixels is not a margin worth spending (ADR-0020). */
+  .hud__mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
   }
 
   .hud__stats {
