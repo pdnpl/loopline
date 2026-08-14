@@ -27,7 +27,11 @@
   --accent-3: #e879f9;
   --danger: #fb7185;
 
-  --overlay-veil: rgba(5, 6, 11, 0.72);
+  --overlay-veil: rgba(5, 6, 11, 0.86);
+  /* Opaque on purpose. The card must never borrow its contrast from whatever
+     happens to be behind it — see the overlay rules. */
+  --panel: #0f1320;
+  --panel-shadow: 0 20px 52px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35);
 
   --radius-sm: 10px;
   --radius: 16px;
@@ -60,7 +64,9 @@
   --accent-3: #c026d3;
   --danger: #e11d48;
 
-  --overlay-veil: rgba(244, 245, 250, 0.75);
+  --overlay-veil: rgba(244, 245, 250, 0.88);
+  --panel: #ffffff;
+  --panel-shadow: 0 20px 52px rgba(15, 20, 35, 0.18), 0 2px 10px rgba(15, 20, 35, 0.08);
 
   color-scheme: light;
 }
@@ -440,9 +446,18 @@ body::after {
   align-items: flex-end;
   justify-content: center;
   padding: 24px 20px calc(var(--safe-bottom) + 34px);
+  /* No `backdrop-filter` here, deliberately.
+     It used to carry the legibility: an 18px blur smeared the board into a flat
+     wash, so the veil could stay at 0.72 and the card could have no background
+     of its own. That holds in a desktop browser and fails in an Android
+     WebView, which is free to weaken or skip the filter — and does. The board
+     then showed through sharp, progress bar and all, directly behind the
+     buttons, and the card became hard to read in both themes.
+     A blur is decoration. Contrast is not, so it is no longer built on one:
+     the veil is nearly opaque by itself and the card carries its own surface.
+     Dropping the filter also takes a per-frame GPU cost off the overlay, which
+     is the screen on the fast-retry path (ADR-0013). */
   background: var(--overlay-veil);
-  backdrop-filter: blur(18px) saturate(120%);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
   animation: veil-in 130ms ease-out;
 }
 
@@ -469,6 +484,15 @@ body::after {
   align-items: center;
   text-align: center;
   gap: 10px;
+  /* An opaque surface, not a transparent stack of text on the veil. This is
+     what separates "active" from "behind" — the figure on the board stays
+     visible around the card, which is worth keeping on the solved screen, but
+     it can no longer compete with the words. */
+  padding: 20px 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--panel-shadow);
   animation: card-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 

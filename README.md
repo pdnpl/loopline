@@ -175,7 +175,7 @@ the merge result. See [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 ## Decisions
 
-Twenty-three architecture decision records live in [`docs/adr/`](docs/adr/README.md).
+Twenty-four architecture decision records live in [`docs/adr/`](docs/adr/README.md).
 Start with [ADR-0006](docs/adr/0006-generate-puzzles-by-eulerian-walk.md) (why a
 level can never be unsolvable) and
 [ADR-0013](docs/adr/0013-stroke-model-and-fast-retry.md) (why the stroke feels
