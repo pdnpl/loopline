@@ -141,9 +141,14 @@ at it.
 
 **Positive**
 
-- The game on the phone is the game in the browser, by construction.
+- The game on the phone is the game in the browser, by construction. Verified on
+  a Pixel 8 emulator running Android 16: level 1 solved in one continuous
+  gesture, all five edges committed, `5/5`, a best time recorded — so the stroke
+  model, the hysteresis and `localStorage` all survive the WebView unchanged.
 - Offline was already true and stays true: the assets are inside the APK and the
-  app never asks the network for anything.
+  app never asks the network for anything. Verified by enabling airplane mode
+  and cold-starting the app, which came up on level 2 with the stored progress
+  intact and generated its board from the seed.
 - One `npm run android:apk` produces an installable APK from a clean checkout.
 - The web deployment is untouched. Cloudflare still serves the same `dist/`.
 - `ios/` can be generated later and handed to a Mac through the repository.

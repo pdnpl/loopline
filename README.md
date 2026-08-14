@@ -84,6 +84,18 @@ The APK lands in `android/app/build/outputs/apk/debug/app-debug.apk`.
 Android Studio is optional — the command-line tools are enough. Gradle
 downloads itself on first build.
 
+### On an emulator
+
+```bash
+sdkmanager "emulator" "system-images;android-36;google_apis;x86_64"
+avdmanager create avd -n loopline_pixel8 -k "system-images;android-36;google_apis;x86_64" -d pixel_8
+emulator -avd loopline_pixel8 -gpu swiftshader_indirect -no-audio -no-boot-anim
+```
+
+Then `npm run android:install` and launch it. `swiftshader_indirect` renders in
+software, which is slow enough that the first paint can take several seconds —
+a black screen right after launch is the renderer catching up, not a failure.
+
 **Builds are local by design.** No GitHub workflow touches Android or iOS;
 CI verifies and deploys the web app and nothing else.
 
