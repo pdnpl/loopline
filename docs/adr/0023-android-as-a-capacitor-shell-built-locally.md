@@ -96,7 +96,34 @@ A root-level `.ts` file falls under `eslint .` but outside `tsconfig.json`'s
 `include`, so it would be parsed by the JavaScript parser and fail. JSON has no
 such problem, and the config is six lines of literals with nothing to type-check.
 
-### 7. The SDK lives in the user profile
+### 7. The icon and the launch screen are ours, and they are vectors
+
+Capacitor ships a working placeholder: its own logo, on white, as 26 PNGs
+across five densities and two orientations. Shipping that would put another
+project's brand on the home screen, so it is replaced — packaging, not source,
+and therefore in scope for this pass.
+
+Both are built from the wordmark already in `index.html`, as **vector
+drawables**. One file replaces a density ladder and stays sharp at any size,
+including the 192 px Play Store listing.
+
+Two details worth recording, because both were nearly wrong:
+
+- **The mark is scaled so it survives a circular mask.** In the 108×108
+  adaptive canvas, a round launcher keeps a 33-unit radius from centre. At the
+  obvious scale the mark's four ends land ~37 units out and get clipped. It is
+  drawn at 3.3× instead, which puts the furthest point at ~30.
+- **`drawable-v24/ic_launcher_foreground.xml` had to go.** The Android template
+  leaves an Android-robot vector there, and `-v24` beats plain `drawable/` on
+  every device this app supports — the new icon would have been built,
+  packaged, and never once displayed.
+
+The launch screen follows night mode via `values/` and `values-night/`, so a
+light phone does not get a black flash before a light board. The icon
+deliberately does **not**: an app icon that changes colour under the user is a
+novelty, not a help.
+
+### 8. The SDK lives in the user profile
 
 A partial SDK already existed at `C:\Program Files (x86)\Android\android-sdk` —
 a Visual Studio remnant with a platform but no `build-tools`, no

@@ -15,16 +15,25 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const projectDir = join(root, 'android');
 const windows = process.platform === 'win32';
-const wrapper = windows ? 'gradlew.bat' : './gradlew';
 const tasks = process.argv.slice(2);
 
-const result = spawnSync(wrapper, tasks.length > 0 ? tasks : ['assembleDebug'], {
-  cwd: projectDir,
-  stdio: 'inherit',
-  // cmd needs a shell to resolve the .bat; a POSIX shell does not, and giving
-  // it one would only add a layer of quoting to get wrong.
-  shell: windows,
-});
+// An absolute path, not a bare name: `cwd` sets the child's working directory
+// but does not make cmd.exe look there when resolving the command, so a bare
+// `gradlew.bat` is searched for on PATH and never found. Quoted because the
+// path may contain spaces, and cmd would otherwise split on them.
+const wrapper = join(projectDir, windows ? 'gradlew.bat' : 'gradlew');
+
+const result = spawnSync(
+  windows ? `"${wrapper}"` : wrapper,
+  tasks.length > 0 ? tasks : ['assembleDebug'],
+  {
+    cwd: projectDir,
+    stdio: 'inherit',
+    // Node refuses to spawn a .bat without a shell. A POSIX shell is not needed:
+    // the wrapper is executable and invoked by absolute path.
+    shell: windows,
+  },
+);
 
 if (result.error) {
   // stderr rather than console, which the repo's ESLint config does not declare

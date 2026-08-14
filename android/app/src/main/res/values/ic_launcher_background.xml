@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  The launcher icon does not follow night mode. An app icon that changes colour
+  under the user is a novelty, not a help — this one stays the dark board it is
+  on the home screen of a light phone too.
+-->
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#05060B</color>
 </resources>
