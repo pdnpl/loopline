@@ -1,20 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    The Loopline mark: an L drawn as one stroke, with the head still lit at the
+    end of it. Three dots and two lines — the smallest legal board, with the
+    flare on one of the two endpoints a run could actually finish at.
+
+    Same mark as the Android launcher icon (ADR-0023), scaled to 64 and with
+    the halo dropped: at a 16 px tab favicon a stroke halo is mud.
+
+    Kept inside a radius of ~23 from centre. The manifest declares this file
+    `maskable` as well as `any`, and a maskable icon may be cropped to the
+    central 80% — a circle of radius 25.6 here.
+  -->
   <defs>
-    <linearGradient id="stroke" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
+    <linearGradient id="trail" x1="22" y1="17" x2="42" y2="47" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#5EEAD4" />
-      <stop offset="0.55" stop-color="#818CF8" />
+      <stop offset="0.52" stop-color="#818CF8" />
       <stop offset="1" stop-color="#E879F9" />
     </linearGradient>
+    <radialGradient id="flare" cx="42" cy="47" r="11" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A5B4FC" stop-opacity="0.95" />
+      <stop offset="0.35" stop-color="#A5B4FC" stop-opacity="0.25" />
+      <stop offset="1" stop-color="#A5B4FC" stop-opacity="0" />
+    </radialGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#0B0E18" />
+
+  <rect width="64" height="64" rx="14" fill="#05060B" />
+
   <path
-    d="M14 48 L14 16 L32 34 L50 16 L50 48"
+    d="M22 17 L22 47 L42 47"
     fill="none"
-    stroke="url(#stroke)"
+    stroke="url(#trail)"
     stroke-width="6"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
-  <circle cx="14" cy="48" r="4.6" fill="#5EEAD4" />
-  <circle cx="50" cy="48" r="4.6" fill="#E879F9" />
+
+  <circle cx="42" cy="47" r="11" fill="url(#flare)" />
+
+  <!-- The two nodes already passed: grey, so the trail stays the bright thing. -->
+  <circle cx="22" cy="17" r="4" fill="#94A3B8" />
+  <circle cx="22" cy="47" r="4" fill="#94A3B8" />
+
+  <!-- The lit head. -->
+  <circle cx="42" cy="47" r="5" fill="#FFFFFF" />
 </svg>
