@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The launch screen: the game's background colour with the mark centred on it.
+
+  Replaces the PNG set Capacitor ships, which carried the Capacitor logo across
+  eleven density and orientation variants. A vector needs one file and stays
+  sharp on every screen.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item
+        android:width="132dp"
+        android:height="132dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_mark" />
+</layer-list>

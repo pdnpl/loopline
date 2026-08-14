@@ -3,7 +3,16 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', '.wrangler/**', 'coverage/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      '.wrangler/**',
+      'coverage/**',
+      // Generated native shells. Capacitor and the platform toolchains own
+      // every file in here; linting them would be linting someone else's code.
+      'android/**',
+      'ios/**',
+    ],
   },
   js.configs.recommended,
   {

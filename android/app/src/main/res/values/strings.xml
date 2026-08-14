@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Loopline</string>
+    <string name="title_activity_main">Loopline</string>
+    <string name="package_name">pl.voltis.loopline</string>
+    <string name="custom_url_scheme">pl.voltis.loopline</string>
+</resources>

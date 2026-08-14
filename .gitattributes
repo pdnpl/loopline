@@ -9,3 +9,16 @@
 *.gif binary
 *.ico binary
 *.woff2 binary
+*.jar binary
+*.keystore binary
+*.jks binary
+
+# Batch files are read by cmd.exe, which can mis-parse a script whose lines end
+# in LF only. The rule above would hand a fresh Windows clone exactly that, and
+# `gradlew.bat` is how the Android build starts.
+*.bat text eol=crlf
+
+# The POSIX side of the same wrapper pair must stay LF, and must stay
+# executable, or the Mac and Linux builds cannot start it.
+android/gradlew text eol=lf
+ios/**/*.sh text eol=lf

@@ -3,3 +3,7 @@ node_modules
 coverage
 .wrangler
 package-lock.json
+
+# Generated native projects — owned by Capacitor and the platform toolchains.
+android
+ios

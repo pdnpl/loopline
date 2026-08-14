@@ -1,0 +1,8 @@
+{
+  "appId": "pl.voltis.loopline",
+  "appName": "Loopline",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#05060b"
+  }
+}

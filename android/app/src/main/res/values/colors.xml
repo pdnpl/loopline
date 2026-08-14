@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splash colours, light mode. The dark counterpart lives in values-night/, so
+  the launch screen follows the system the same way the game's "auto" theme
+  does — a light phone never gets a black flash before a light board.
+
+  These are the game's own palette values from src/styles.css, per mode: the
+  "bg-0" background and the "accent" stroke. If those change, change these.
+-->
+<resources>
+    <color name="splash_background">#F4F5FA</color>
+    <color name="splash_mark">#4F46E5</color>
+</resources>

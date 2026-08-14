@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash colours, dark mode. See values/colors.xml. -->
+<resources>
+    <color name="splash_background">#05060B</color>
+    <color name="splash_mark">#818CF8</color>
+</resources>
